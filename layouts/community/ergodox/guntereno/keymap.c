@@ -1,27 +1,148 @@
 #include QMK_KEYBOARD_H
 
-#define BASE
+#include "version.h"
 
-const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
-    [0] = LAYOUT_ergodox(
-        KC_GRV,  KC_1,  KC_2,  KC_3,    KC_4,    KC_5, KC_EQL,
-        KC_TAB,  KC_Q,  KC_W,  KC_E,    KC_R,    KC_T, KC_EQL,
-        KC_ESC,  KC_A,  KC_S,  KC_D,    KC_F,    KC_G,
-        KC_LSFT, KC_Z,  KC_X,  KC_C,    KC_V,    KC_B, KC_B,
-        KC_LCTL, KC_F4, KC_F5, KC_LGUI, KC_LALT,
+#define BASE 0
+#define NUMPAD 1
+#define FUNCTION 2
+#define SPECIAL 3
 
-                 KC_C,    KC_V,
-                          KC_PGUP,
-        KC_BSPC, KC_BSPC, KC_DEL,
 
-        KC_5, KC_6,  KC_7,    KC_8,    KC_9,   KC_0,     KC_MINS,
-        KC_Y, KC_Y,  KC_U,    KC_I,    KC_O,   KC_P,     KC_BSLS,
-              KC_H,  KC_J,    KC_K,    KC_L,   KC_SCLN,  KC_QUOT,
-        KC_N, KC_N,  KC_M,    KC_COMM, KC_DOT, KC_SLSH,  KC_RSFT,
-                     KC_LEFT, KC_DOWN, KC_UP,  KC_RIGHT, KC_RGUI,
+//Tap Dance Declarations
+enum {
+  TD_ESC_CAPS = 0,
+  TD_PAUSE_PRNTSCRN = 1,
+};
 
-        KC_RALT, KC_A,
-        KC_PGDN,
-        KC_RCTL, KC_ENT, KC_SPC
+// Tap Dance Definitions
+qk_tap_dance_action_t tap_dance_actions[] =
+{
+  [TD_ESC_CAPS]  = ACTION_TAP_DANCE_DOUBLE(KC_ESC, KC_CAPS),
+  [TD_PAUSE_PRNTSCRN] = ACTION_TAP_DANCE_DOUBLE(KC_PSCREEN, KC_PAUSE),
+};
+
+
+const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
+{
+    [BASE] = LAYOUT_ergodox(
+        // Left hand side
+        KC_EQL,  KC_1,    KC_2,     KC_3,    KC_4,     KC_5, TD(TD_ESC_CAPS),
+        KC_NUHS, KC_Q,    KC_W,     KC_E,    KC_R,     KC_T, KC_NUBS,
+        KC_TAB,  KC_A,    KC_S,     KC_D,    KC_F,     KC_G,
+        KC_LSPO, KC_Z,    KC_X,     KC_C,    KC_V,     KC_B, MO(SPECIAL),
+        KC_LCTL, KC_LGUI, KC_LALT, KC_LEFT, KC_RIGHT,
+
+                 KC_GRV, KC_HOME,
+                         KC_END,
+        KC_BSPC, KC_DEL, MO(FUNCTION),
+
+        // Right hand side0
+        TG(NUMPAD),   KC_6, KC_7,  KC_8,    KC_9,    KC_0,           KC_MINS,
+        KC_LBRACKET,  KC_Y, KC_U,  KC_I,    KC_O,    KC_P,           KC_RBRACKET,
+                      KC_H, KC_J,  KC_K,    KC_L,    KC_SCLN,        KC_QUOT,
+        MO(SPECIAL),  KC_N, KC_M,  KC_COMM, KC_DOT,  KC_SLSH,        KC_RSPC,
+                            KC_UP, KC_DOWN, KC_RALT, KC_APPLICATION, KC_RCTL,
+
+        KC_PGUP,      TD(TD_PAUSE_PRNTSCRN),
+        KC_PGDOWN,
+        MO(FUNCTION), KC_ENT,   KC_SPC
     ),
+
+    [NUMPAD] = LAYOUT_ergodox(
+        // Left hand side
+        KC_NO,    KC_NO,   KC_NO,   KC_NO, KC_NO, KC_NO, KC_NO,
+        KC_NO,    KC_NO,   KC_NO,   KC_NO, KC_NO, KC_NO, KC_NO,
+        KC_NO,    KC_NO,   KC_NO,   KC_NO, KC_NO, KC_NO,
+        KC_TRNS,  KC_NO,   KC_NO,   KC_NO, KC_NO, KC_NO, KC_NO,
+        KC_TRNS,  KC_TRNS, KC_TRNS, KC_NO, KC_NO,
+
+               KC_NO, KC_NO,
+                      KC_NO,
+        KC_NO, KC_NO, KC_NO,
+
+        // Right hand side0
+        TG(NUMPAD), KC_NO, KC_NO,         KC_NUMLOCK, KC_KP_SLASH, KC_KP_ASTERISK, KC_KP_MINUS,
+        KC_NO,      KC_NO, KC_NO,         KC_P7,      KC_P8,       KC_P9,          KC_KP_PLUS,
+                    KC_NO, KC_NO,         KC_P4,      KC_P5,       KC_P6,          KC_KP_PLUS,
+        KC_NO,      KC_NO, KC_CALCULATOR, KC_P1,      KC_P2,       KC_P3,          KC_KP_ENTER,
+                           KC_NO,         KC_KP_0,    KC_KP_0,     KC_KP_DOT,      KC_KP_ENTER,
+
+        KC_KP_ENTER, KC_KP_0,
+        KC_NO,
+        KC_NO,       KC_NO,   KC_NO
+    ),
+
+    [FUNCTION] = LAYOUT_ergodox(
+      // Left hand side
+      KC_NO,    KC_F1,    KC_F2,    KC_F3,   KC_F4,    KC_F5,     KC_F11,
+      KC_NO,    KC_NO,    KC_HOME,  KC_UP,   KC_END,   KC_PGUP,   KC_NO,
+      KC_NO,    KC_NO,    KC_LEFT,  KC_DOWN, KC_RIGHT, KC_PGDOWN,
+      KC_TRNS,  KC_NO,    KC_NO,    KC_NO,   KC_NO,    KC_NO,     KC_NO,
+      KC_TRNS,  KC_TRNS,  KC_TRNS,  KC_NO,   KC_NO,
+
+             KC_NO, KC_NO,
+                    KC_NO,
+      KC_NO, KC_NO, KC_NO,
+
+      // Right hand side0
+      KC_F12,  KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,  KC_NO,
+      KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_NO,
+      KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_NO,
+      KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_TRNS,
+                        KC_NO,   KC_NO,   KC_TRNS, KC_TRNS, KC_TRNS,
+
+      KC_NO, KC_NO,
+      KC_NO,
+      KC_NO, KC_NO,      KC_NO
+    ),
+
+
+    [SPECIAL] = LAYOUT_ergodox(
+        // Left hand side
+        KC_NO, KC_NO, KC_NO,               KC_NO,             KC_NO,               KC_NO, KC_NO,
+        KC_NO, KC_NO, KC_NO,               KC_AUDIO_VOL_UP,   KC_MEDIA_PLAY_PAUSE, KC_NO, KC_NO,
+        KC_NO, KC_NO, KC_MEDIA_PREV_TRACK, KC_AUDIO_VOL_DOWN, KC_MEDIA_NEXT_TRACK, KC_NO,
+        KC_NO, KC_NO, KC_NO,               KC__MUTE,          KC_NO,               KC_NO, KC_NO,
+        KC_NO, KC_NO, KC_NO,               KC_NO,             KC_NO,
+
+                KC_INS, KC_SCROLLLOCK,
+                        KC_NO,
+        KC_NO,  KC_NO,  MO(SPECIAL),
+
+        // Right hand side0
+        KC_NO, KC_NO, KC_NO,         KC_NO,        KC_NO,        KC_NO, KC_NO,
+        KC_NO, KC_NO, KC_MS_WH_DOWN, KC_MS_UP,     KC_MS_WH_UP,  KC_NO, KC_NO,
+               KC_NO, KC_MS_LEFT,    KC_MS_DOWN,   KC_MS_RIGHT,  KC_NO, KC_NO,
+        KC_NO, KC_NO, KC_MS_ACCEL0,  KC_MS_ACCEL1, KC_MS_ACCEL2, KC_NO, KC_NO,
+               KC_NO, KC_NO,         KC_NO,        KC_NO,        KC_NO,
+
+        KC_NO, KC_NO,
+        KC_NO,
+        KC_NO, KC_MS_BTN2, KC_MS_BTN1
+    ),
+};
+
+
+// Runs constantly in the background, in a loop.
+void matrix_scan_user(void)
+{
+
+};
+
+// Runs whenever there is a layer state change.
+uint32_t layer_state_set_user(uint32_t state)
+{
+  ergodox_board_led_off();
+  ergodox_right_led_1_off();
+  ergodox_right_led_2_off();
+  ergodox_right_led_3_off();
+
+  uint8_t layer = biton32(state);
+  if(layer == NUMPAD)
+  {
+    ergodox_right_led_1_on();
+  }
+
+
+  return state;
 };
