@@ -18,13 +18,17 @@ enum tapdance_definitions
 {
   TD_ESC_CAPS = 0,
   TD_PAUSE_PRNTSCRN = 1,
+  TD_SAFETY_RESET
 };
+
+void dance_safety_flash(qk_tap_dance_state_t *state, void *user_data);
 
 // Tap Dance Definitions
 qk_tap_dance_action_t tap_dance_actions[] =
 {
   [TD_ESC_CAPS]  = ACTION_TAP_DANCE_DOUBLE(KC_ESC, KC_CAPS),
   [TD_PAUSE_PRNTSCRN] = ACTION_TAP_DANCE_DOUBLE(KC_PSCREEN, KC_PAUSE),
+  [TD_SAFETY_RESET] = ACTION_TAP_DANCE_FN(dance_safety_flash)
 };
 
 
@@ -117,7 +121,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
         KC_NO,  KC_NO,  KC_NO,
 
         // Right hand side0
-        KC_NO,   KC_NO, KC_NO,   KC_NO,   KC_NO,   KC_NO,   RESET,
+        KC_NO,   KC_NO, KC_NO,   KC_NO,   KC_NO,   KC_NO,   TD(TD_SAFETY_RESET),
         KC_NO,   KC_NO, KC_NO,   KC_NO,   KC_NO,   KC_NO,   EPRM,
                  KC_NO, BL_TOGG, BL_DEC,  BL_INC,  KC_NO,   KC_NO,
         KC_TRNS, KC_NO, KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_TRNS,
@@ -196,3 +200,14 @@ uint32_t layer_state_set_user(uint32_t state)
 
   return state;
 };
+
+void dance_safety_flash(qk_tap_dance_state_t *state, void *user_data)
+{
+  const int TAP_COUNT = 3;
+  if (state->count >= TAP_COUNT)
+  {
+    reset_keyboard();
+    reset_tap_dance(state);
+  }
+}
+
