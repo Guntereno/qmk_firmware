@@ -11,8 +11,7 @@ enum custom_keycodes
 {
   PLACEHOLDER = SAFE_RANGE, // can always be here
   EPRM,
-  VRSN,
-  RGB_SLD
+  VRSN
 };
 
 enum tapdance_definitions
@@ -157,7 +156,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record)
 {
   switch (keycode)
   {
-    // dynamically generate these.
     case EPRM:
       if (record->event.pressed)
       {
@@ -169,15 +167,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record)
       if (record->event.pressed)
       {
         output_version();
-      }
-      return false;
-      break;
-    case RGB_SLD:
-      if (record->event.pressed)
-      {
-        #ifdef RGBLIGHT_ENABLE
-          rgblight_mode(1);
-        #endif
       }
       return false;
       break;
