@@ -7,14 +7,16 @@
 #define FUNCTION 2
 #define SPECIAL 3
 
-enum custom_keycodes {
+enum custom_keycodes
+{
   PLACEHOLDER = SAFE_RANGE, // can always be here
   EPRM,
   VRSN,
   RGB_SLD
 };
 
-enum tapdance_definitions {
+enum tapdance_definitions
+{
   TD_ESC_CAPS = 0,
   TD_PAUSE_PRNTSCRN = 1,
 };
@@ -151,23 +153,28 @@ const macro_t *action_get_macro(keyrecord_t *record, uint8_t id, uint8_t opt)
   return MACRO_NONE;
 };
 
-bool process_record_user(uint16_t keycode, keyrecord_t *record) {
-  switch (keycode) {
+bool process_record_user(uint16_t keycode, keyrecord_t *record)
+{
+  switch (keycode)
+  {
     // dynamically generate these.
     case EPRM:
-      if (record->event.pressed) {
+      if (record->event.pressed)
+      {
         eeconfig_init();
       }
       return false;
       break;
     case VRSN:
-      if (record->event.pressed) {
+      if (record->event.pressed)
+      {
         output_version();
       }
       return false;
       break;
     case RGB_SLD:
-      if (record->event.pressed) {
+      if (record->event.pressed)
+      {
         #ifdef RGBLIGHT_ENABLE
           rgblight_mode(1);
         #endif
@@ -197,7 +204,6 @@ uint32_t layer_state_set_user(uint32_t state)
   {
     ergodox_right_led_1_on();
   }
-
 
   return state;
 };
