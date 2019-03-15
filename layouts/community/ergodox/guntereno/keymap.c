@@ -10,8 +10,10 @@
 enum custom_keycodes
 {
   PLACEHOLDER = SAFE_RANGE, // can always be here
-  EPRM,
-  VRSN
+  CK_EPRM,
+  CK_VRSN,
+  CK_LCTR,
+  CK_RCTR
 };
 
 enum tapdance_definitions
@@ -36,22 +38,22 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
 {
     [BASE] = LAYOUT_ergodox(
         // Left hand side
-        KC_EQL,  KC_1,    KC_2,     KC_3,    KC_4,     KC_5, TD(TD_ESC_CAPS),
-        KC_NUHS, KC_Q,    KC_W,     KC_E,    KC_R,     KC_T, KC_NUBS,
-        KC_TAB,  KC_A,    KC_S,     KC_D,    KC_F,     KC_G,
-        KC_LSPO, KC_Z,    KC_X,     KC_C,    KC_V,     KC_B, MO(SPECIAL),
-        KC_LCTL, KC_LGUI, KC_LALT, KC_LEFT, KC_RIGHT,
+        KC_EQL,   KC_1,    KC_2,    KC_3,    KC_4,     KC_5, TD(TD_ESC_CAPS),
+        KC_NUHS,  KC_Q,    KC_W,    KC_E,    KC_R,     KC_T, KC_NUBS,
+        KC_TAB,   KC_A,    KC_S,    KC_D,    KC_F,     KC_G,
+        KC_LSPO,  KC_Z,    KC_X,    KC_C,    KC_V,     KC_B, MO(SPECIAL),
+        CK_LCTR,  KC_LALT, KC_LGUI, KC_LEFT, KC_RIGHT,
 
                  KC_GRV, KC_HOME,
                          KC_END,
         KC_BSPC, KC_DEL, MO(FUNCTION),
 
         // Right hand side0
-        TG(NUMPAD),   KC_6, KC_7,  KC_8,    KC_9,    KC_0,           KC_MINS,
-        KC_LBRACKET,  KC_Y, KC_U,  KC_I,    KC_O,    KC_P,           KC_RBRACKET,
-                      KC_H, KC_J,  KC_K,    KC_L,    KC_SCLN,        KC_QUOT,
-        MO(SPECIAL),  KC_N, KC_M,  KC_COMM, KC_DOT,  KC_SLSH,        KC_RSPC,
-                            KC_UP, KC_DOWN, KC_RALT, KC_APPLICATION, KC_RCTL,
+        TG(NUMPAD),   KC_6, KC_7,  KC_8,    KC_9,           KC_0,    KC_MINS,
+        KC_LBRACKET,  KC_Y, KC_U,  KC_I,    KC_O,           KC_P,    KC_RBRACKET,
+                      KC_H, KC_J,  KC_K,    KC_L,           KC_SCLN, KC_QUOT,
+        MO(SPECIAL),  KC_N, KC_M,  KC_COMM, KC_DOT,         KC_SLSH, KC_RSPC,
+                            KC_UP, KC_DOWN, KC_APPLICATION, KC_RALT, CK_RCTR,
 
         KC_PGUP,      TD(TD_PAUSE_PRNTSCRN),
         KC_PGDOWN,
@@ -66,7 +68,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
         KC_TRNS,  KC_NO,         KC_NO,          KC_NO,      KC_NO,       KC_NO, KC_NO,
         KC_TRNS,  KC_TRNS,       KC_TRNS,        KC_NO,      KC_NO,
 
-               KC_NO,     KC_TRNS,
+                 KC_NO,   KC_TRNS,
                           KC_TRNS,
         KC_TRNS, KC_TRNS, KC_NO,
 
@@ -110,11 +112,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
 
     [SPECIAL] = LAYOUT_ergodox(
         // Left hand side
-        RESET, KC_NO, KC_NO,               KC_NO,             KC_NO,               KC_NO, KC_NO,
-        EPRM,  KC_NO, KC_NO,               KC_AUDIO_VOL_UP,   KC_MEDIA_PLAY_PAUSE, KC_NO, KC_NO,
-        KC_NO, KC_NO, KC_MEDIA_PREV_TRACK, KC_AUDIO_VOL_DOWN, KC_MEDIA_NEXT_TRACK, KC_NO,
-        KC_NO, KC_NO, KC_NO,               KC__MUTE,          VRSN,                KC_NO, KC_TRNS,
-        KC_NO, KC_NO, KC_NO,               KC_NO,             KC_NO,
+        RESET,   KC_NO, KC_NO,               KC_NO,             KC_NO,               KC_NO, KC_NO,
+        CK_EPRM, KC_NO, KC_NO,               KC_AUDIO_VOL_UP,   KC_MEDIA_PLAY_PAUSE, KC_NO, KC_NO,
+        KC_NO,   KC_NO, KC_MEDIA_PREV_TRACK, KC_AUDIO_VOL_DOWN, KC_MEDIA_NEXT_TRACK, KC_NO,
+        KC_NO,   KC_NO, KC_NO,               KC__MUTE,          CK_VRSN,                KC_NO, KC_TRNS,
+        KC_NO,   KC_NO, KC_NO,               KC_NO,             KC_NO,
 
                 KC_INS, KC_SCROLLLOCK,
                         KC_NO,
@@ -122,7 +124,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
 
         // Right hand side0
         KC_NO,   KC_NO, KC_NO,   KC_NO,   KC_NO,   KC_NO,   TD(TD_SAFETY_RESET),
-        KC_NO,   KC_NO, KC_NO,   KC_NO,   KC_NO,   KC_NO,   EPRM,
+        KC_NO,   KC_NO, KC_NO,   KC_NO,   KC_NO,   KC_NO,   CK_EPRM,
                  KC_NO, BL_TOGG, BL_DEC,  BL_INC,  KC_NO,   KC_NO,
         KC_TRNS, KC_NO, KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_TRNS,
                         KC_NO,   KC_NO,   KC_TRNS, KC_TRNS, KC_TRNS,
@@ -156,24 +158,55 @@ const macro_t *action_get_macro(keyrecord_t *record, uint8_t id, uint8_t opt)
   return MACRO_NONE;
 };
 
+void handle_mod_tap(bool pressed, uint16_t* timer, uint16_t mod_code, const char* str)
+{
+  if(pressed)
+  {
+    *timer = timer_read();
+    register_code(mod_code);
+  }
+  else
+  {
+    unregister_code(mod_code);
+    if (timer_elapsed(*timer) < TAPPING_TERM)
+    {
+      SEND_STRING(str); // Change the character(s) to be sent on tap here
+    }
+  }
+}
+
 bool process_record_user(uint16_t keycode, keyrecord_t *record)
 {
   switch (keycode)
   {
-    case EPRM:
+    case CK_EPRM:
+    {
       if (record->event.pressed)
       {
         eeconfig_init();
       }
       return false;
-      break;
-    case VRSN:
+    }
+    case CK_VRSN:
+    {
       if (record->event.pressed)
       {
         output_version();
       }
       return false;
-      break;
+    }
+    case CK_LCTR:
+    {
+      static uint16_t timer;
+      handle_mod_tap(record->event.pressed, &timer, KC_LCTL, "{");
+      return false;
+    }
+    case CK_RCTR:
+    {
+      static uint16_t timer;
+      handle_mod_tap(record->event.pressed, &timer, KC_RCTL, "}");
+      return false;
+    }
   }
   return true;
 }
@@ -210,4 +243,3 @@ void dance_safety_flash(qk_tap_dance_state_t *state, void *user_data)
     reset_tap_dance(state);
   }
 }
-
