@@ -10,7 +10,6 @@
 enum custom_keycodes
 {
   PLACEHOLDER = SAFE_RANGE, // can always be here
-  EPRM,
   VRSN
 };
 
@@ -18,19 +17,21 @@ enum tapdance_definitions
 {
   TD_ESC_CAPS = 0,
   TD_PAUSE_PRNTSCRN = 1,
-  TD_SAFETY_RESET
+  TD_SAFETY_RESET,
+  TD_SAFETY_EEPROM
 };
 
-void dance_safety_flash(qk_tap_dance_state_t *state, void *user_data);
+void dance_safety_reset(qk_tap_dance_state_t *state, void *user_data);
+void dance_safety_eeprom(qk_tap_dance_state_t *state, void *user_data);
 
 // Tap Dance Definitions
 qk_tap_dance_action_t tap_dance_actions[] =
 {
   [TD_ESC_CAPS]  = ACTION_TAP_DANCE_DOUBLE(KC_ESC, KC_CAPS),
   [TD_PAUSE_PRNTSCRN] = ACTION_TAP_DANCE_DOUBLE(KC_PSCREEN, KC_PAUSE),
-  [TD_SAFETY_RESET] = ACTION_TAP_DANCE_FN(dance_safety_flash)
+  [TD_SAFETY_RESET] = ACTION_TAP_DANCE_FN(dance_safety_reset),
+  [TD_SAFETY_EEPROM] = ACTION_TAP_DANCE_FN(dance_safety_eeprom)
 };
-
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
 {
@@ -110,11 +111,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
 
     [SPECIAL] = LAYOUT_ergodox(
         // Left hand side
-        RESET, KC_NO, KC_NO,               KC_NO,             KC_NO,               KC_NO, KC_NO,
-        EPRM,  KC_NO, KC_NO,               KC_AUDIO_VOL_UP,   KC_MEDIA_PLAY_PAUSE, KC_NO, KC_NO,
-        KC_NO, KC_NO, KC_MEDIA_PREV_TRACK, KC_AUDIO_VOL_DOWN, KC_MEDIA_NEXT_TRACK, KC_NO,
-        KC_NO, KC_NO, KC_NO,               KC__MUTE,          VRSN,                KC_NO, KC_TRNS,
-        KC_NO, KC_NO, KC_NO,               KC_NO,             KC_NO,
+        TD(TD_SAFETY_RESET),  KC_NO, KC_NO,               KC_NO,             KC_NO,               KC_NO, KC_NO,
+        TD(TD_SAFETY_EEPROM), KC_NO, KC_NO,               KC_AUDIO_VOL_UP,   KC_MEDIA_PLAY_PAUSE, KC_NO, KC_NO,
+        KC_NO,                KC_NO, KC_MEDIA_PREV_TRACK, KC_AUDIO_VOL_DOWN, KC_MEDIA_NEXT_TRACK, KC_NO,
+        KC_NO,                KC_NO, KC_NO,               KC__MUTE,          VRSN,                KC_NO, KC_TRNS,
+        KC_NO,                KC_NO, KC_NO,               KC_NO,             KC_NO,
 
                 KC_INS, KC_SCROLLLOCK,
                         KC_NO,
@@ -122,7 +123,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
 
         // Right hand side0
         KC_NO,   KC_NO, KC_NO,   KC_NO,   KC_NO,   KC_NO,   TD(TD_SAFETY_RESET),
-        KC_NO,   KC_NO, KC_NO,   KC_NO,   KC_NO,   KC_NO,   EPRM,
+        KC_NO,   KC_NO, KC_NO,   KC_NO,   KC_NO,   KC_NO,   TD(TD_SAFETY_EEPROM),
                  KC_NO, BL_TOGG, BL_DEC,  BL_INC,  KC_NO,   KC_NO,
         KC_TRNS, KC_NO, KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_TRNS,
                         KC_NO,   KC_NO,   KC_TRNS, KC_TRNS, KC_TRNS,
@@ -140,18 +141,7 @@ void output_version(void)
 
 const macro_t *action_get_macro(keyrecord_t *record, uint8_t id, uint8_t opt)
 {
-  // MACRODOWN only works in this function
   switch(id) {
-    case 0:
-    if (record->event.pressed) {
-      output_version();
-    }
-    break;
-    case 1:
-    if (record->event.pressed) { // For resetting EEPROM
-      eeconfig_init();
-    }
-    break;
   }
   return MACRO_NONE;
 };
@@ -160,21 +150,14 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record)
 {
   switch (keycode)
   {
-    case EPRM:
-      if (record->event.pressed)
-      {
-        eeconfig_init();
-      }
-      return false;
-      break;
     case VRSN:
       if (record->event.pressed)
       {
         output_version();
       }
       return false;
-      break;
   }
+
   return true;
 }
 
@@ -201,13 +184,27 @@ uint32_t layer_state_set_user(uint32_t state)
   return state;
 };
 
-void dance_safety_flash(qk_tap_dance_state_t *state, void *user_data)
+
+// Tapdance Functions
+bool process_safety_tapdance(qk_tap_dance_state_t *state)
 {
   const int TAP_COUNT = 3;
   if (state->count >= TAP_COUNT)
   {
-    reset_keyboard();
     reset_tap_dance(state);
+    return true;
   }
+  return false;
 }
 
+void dance_safety_reset(qk_tap_dance_state_t *state, void *user_data)
+{
+  if (process_safety_tapdance(state))
+    reset_keyboard();
+}
+
+void dance_safety_eeprom(qk_tap_dance_state_t *state, void *user_data)
+{
+  if (process_safety_tapdance(state))
+    eeconfig_init();
+}
