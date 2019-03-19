@@ -10,29 +10,24 @@
 enum custom_keycodes
 {
   PLACEHOLDER = SAFE_RANGE, // can always be here
-  CK_EPRM,
   CK_VRSN,
   CK_LCTR,
   CK_RCTR
 };
 
-enum tapdance_definitions
-{
-  TD_ESC_CAPS = 0,
-  TD_PAUSE_PRNTSCRN = 1,
-  TD_SAFETY_RESET
-};
+enum tapdance_definitions { TD_ESC_CAPS, TD_PAUSE_PRNTSCRN, TD_SAFETY_RESET, TD_SAFETY_EEPROM };
 
-void dance_safety_flash(qk_tap_dance_state_t *state, void *user_data);
+void dance_safety_reset(qk_tap_dance_state_t *state, void *user_data);
+void dance_safety_eeprom(qk_tap_dance_state_t *state, void *user_data);
 
 // Tap Dance Definitions
 qk_tap_dance_action_t tap_dance_actions[] =
 {
   [TD_ESC_CAPS]  = ACTION_TAP_DANCE_DOUBLE(KC_ESC, KC_CAPS),
   [TD_PAUSE_PRNTSCRN] = ACTION_TAP_DANCE_DOUBLE(KC_PSCREEN, KC_PAUSE),
-  [TD_SAFETY_RESET] = ACTION_TAP_DANCE_FN(dance_safety_flash)
+  [TD_SAFETY_RESET] = ACTION_TAP_DANCE_FN(dance_safety_reset),
+  [TD_SAFETY_EEPROM] = ACTION_TAP_DANCE_FN(dance_safety_eeprom)
 };
-
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
 {
@@ -112,11 +107,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
 
     [SPECIAL] = LAYOUT_ergodox(
         // Left hand side
-        RESET,   KC_NO, KC_NO,               KC_NO,             KC_NO,               KC_NO, KC_NO,
-        CK_EPRM, KC_NO, KC_NO,               KC_AUDIO_VOL_UP,   KC_MEDIA_PLAY_PAUSE, KC_NO, KC_NO,
-        KC_NO,   KC_NO, KC_MEDIA_PREV_TRACK, KC_AUDIO_VOL_DOWN, KC_MEDIA_NEXT_TRACK, KC_NO,
-        KC_NO,   KC_NO, KC_NO,               KC__MUTE,          CK_VRSN,                KC_NO, KC_TRNS,
-        KC_NO,   KC_NO, KC_NO,               KC_NO,             KC_NO,
+        TD(TD_SAFETY_RESET),  KC_NO, KC_NO,               KC_NO,             KC_NO,               KC_NO, KC_NO,
+        TD(TD_SAFETY_EEPROM), KC_NO, KC_NO,               KC_AUDIO_VOL_UP,   KC_MEDIA_PLAY_PAUSE, KC_NO, KC_NO,
+        KC_NO,                KC_NO, KC_MEDIA_PREV_TRACK, KC_AUDIO_VOL_DOWN, KC_MEDIA_NEXT_TRACK, KC_NO,
+        KC_NO,                KC_NO, KC_NO,               KC_MUTE,           CK_VRSN,             KC_NO, KC_TRNS,
+        KC_NO,                KC_NO, KC_NO,               KC_NO,             KC_NO,
 
                 KC_INS, KC_SCROLLLOCK,
                         KC_NO,
@@ -124,7 +119,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
 
         // Right hand side0
         KC_NO,   KC_NO, KC_NO,   KC_NO,   KC_NO,   KC_NO,   TD(TD_SAFETY_RESET),
-        KC_NO,   KC_NO, KC_NO,   KC_NO,   KC_NO,   KC_NO,   CK_EPRM,
+        KC_NO,   KC_NO, KC_NO,   KC_NO,   KC_NO,   KC_NO,   TD(TD_SAFETY_EEPROM),
                  KC_NO, BL_TOGG, BL_DEC,  BL_INC,  KC_NO,   KC_NO,
         KC_TRNS, KC_NO, KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_TRNS,
                         KC_NO,   KC_NO,   KC_TRNS, KC_TRNS, KC_TRNS,
@@ -135,26 +130,10 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
     ),
 };
 
-void output_version(void)
-{
-  SEND_STRING (QMK_KEYBOARD "/" QMK_KEYMAP " @ " QMK_VERSION);
-}
+void output_version(void) { SEND_STRING(QMK_KEYBOARD "/" QMK_KEYMAP " @ " QMK_VERSION); }
 
-const macro_t *action_get_macro(keyrecord_t *record, uint8_t id, uint8_t opt)
-{
-  // MACRODOWN only works in this function
-  switch(id) {
-    case 0:
-    if (record->event.pressed) {
-      output_version();
-    }
-    break;
-    case 1:
-    if (record->event.pressed) { // For resetting EEPROM
-      eeconfig_init();
-    }
-    break;
-  }
+const macro_t *action_get_macro(keyrecord_t *record, uint8_t id, uint8_t opt) {
+  switch (id) {}
   return MACRO_NONE;
 };
 
@@ -179,14 +158,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record)
 {
   switch (keycode)
   {
-    case CK_EPRM:
-    {
-      if (record->event.pressed)
-      {
-        eeconfig_init();
-      }
-      return false;
-    }
     case CK_VRSN:
     {
       if (record->event.pressed)
@@ -208,38 +179,68 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record)
       return false;
     }
   }
+
   return true;
 }
 
-// Runs constantly in the background, in a loop.
-void matrix_scan_user(void)
-{
+void matrix_init_user(void) {
+  ergodox_board_led_off();
+  ergodox_right_led_1_off();
+  ergodox_right_led_2_off();
+  ergodox_right_led_3_off();
+}
 
+// Runs constantly in the background, in a loop.
+void matrix_scan_user(void) {}
+
+// Cached states of current layer and LED states
+static uint8_t g_layer = 0;
+static uint8_t g_leds = 0;
+
+// Used to update the states of the LEDs (standard Ergodox)
+void update_leds(void) {
+  ergodox_right_led_1_off();
+  ergodox_right_led_2_off();
+  ergodox_right_led_3_off();
+
+  // Set the num layer and lock states
+  if (g_layer == NUMPAD) {
+    ergodox_right_led_1_on();
+    // Note Num Lock indicator only visible in NUMPAD layer
+    if (IS_LED_ON(g_leds, USB_LED_NUM_LOCK)) ergodox_right_led_2_on();
+  }
+
+  if (IS_LED_ON(g_leds, USB_LED_CAPS_LOCK)) ergodox_right_led_3_on();
+}
+
+// Runs when one of the LED states is set
+void led_set_user(uint8_t usb_led) {
+  g_leds = usb_led;
+  update_leds();
 };
 
 // Runs whenever there is a layer state change.
 uint32_t layer_state_set_user(uint32_t state)
 {
-  ergodox_board_led_off();
-  ergodox_right_led_1_off();
-  ergodox_right_led_2_off();
-  ergodox_right_led_3_off();
-
-  uint8_t layer = biton32(state);
-  if(layer == NUMPAD)
-  {
-    ergodox_right_led_1_on();
-  }
-
+  g_layer = biton32(state);
+  update_leds();
   return state;
 };
 
-void dance_safety_flash(qk_tap_dance_state_t *state, void *user_data)
-{
+// Tapdance Functions
+bool process_safety_tapdance(qk_tap_dance_state_t *state) {
   const int TAP_COUNT = 3;
-  if (state->count >= TAP_COUNT)
-  {
-    reset_keyboard();
+  if (state->count >= TAP_COUNT) {
     reset_tap_dance(state);
+    return true;
   }
+  return false;
+}
+
+void dance_safety_reset(qk_tap_dance_state_t *state, void *user_data) {
+  if (process_safety_tapdance(state)) reset_keyboard();
+}
+
+void dance_safety_eeprom(qk_tap_dance_state_t *state, void *user_data) {
+  if (process_safety_tapdance(state)) eeconfig_init();
 }
