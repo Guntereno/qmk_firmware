@@ -149,7 +149,7 @@ void handle_mod_tap(bool pressed, uint16_t* timer, uint16_t mod_code, const char
     unregister_code(mod_code);
     if (timer_elapsed(*timer) < TAPPING_TERM)
     {
-      SEND_STRING(str); // Change the character(s) to be sent on tap here
+      send_string(str); // Change the character(s) to be sent on tap here
     }
   }
 }
