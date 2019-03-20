@@ -248,9 +248,6 @@ void dance_safety_eeprom(qk_tap_dance_state_t *state, void *user_data) {
 
 void dance_esc_caps_altf4(qk_tap_dance_state_t *state, void *user_data) {
   switch(state->count) {
-    case 0:
-      // Do nothing
-      break;
     case 1:
       tap_code(KC_ESC);
       break;
@@ -263,7 +260,7 @@ void dance_esc_caps_altf4(qk_tap_dance_state_t *state, void *user_data) {
       unregister_code(KC_LALT);
       break;
     default:
-      reset_tap_dance(state);
+      // Do nothing
       break;
   }
 }
