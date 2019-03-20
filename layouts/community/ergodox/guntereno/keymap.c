@@ -19,14 +19,15 @@ enum tapdance_definitions { TD_ESC_CAPS, TD_PAUSE_PRNTSCRN, TD_SAFETY_RESET, TD_
 
 void dance_safety_reset(qk_tap_dance_state_t *state, void *user_data);
 void dance_safety_eeprom(qk_tap_dance_state_t *state, void *user_data);
+void dance_esc_caps_altf4(qk_tap_dance_state_t *state, void *user_data);
 
 // Tap Dance Definitions
 qk_tap_dance_action_t tap_dance_actions[] =
 {
-  [TD_ESC_CAPS]  = ACTION_TAP_DANCE_DOUBLE(KC_ESC, KC_CAPS),
+  [TD_ESC_CAPS]  = ACTION_TAP_DANCE_FN(dance_esc_caps_altf4),
   [TD_PAUSE_PRNTSCRN] = ACTION_TAP_DANCE_DOUBLE(KC_PSCREEN, KC_PAUSE),
   [TD_SAFETY_RESET] = ACTION_TAP_DANCE_FN(dance_safety_reset),
-  [TD_SAFETY_EEPROM] = ACTION_TAP_DANCE_FN(dance_safety_eeprom)
+  [TD_SAFETY_EEPROM] = ACTION_TAP_DANCE_FN(dance_safety_eeprom),
 };
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
@@ -243,4 +244,26 @@ void dance_safety_reset(qk_tap_dance_state_t *state, void *user_data) {
 
 void dance_safety_eeprom(qk_tap_dance_state_t *state, void *user_data) {
   if (process_safety_tapdance(state)) eeconfig_init();
+}
+
+void dance_esc_caps_altf4(qk_tap_dance_state_t *state, void *user_data) {
+  switch(state->count) {
+    case 0:
+      // Do nothing
+      break;
+    case 1:
+      tap_code(KC_ESC);
+      break;
+    case 2:
+      tap_code(KC_CAPS);
+      break;
+    case 3:
+      register_code(KC_LALT);
+      tap_code(KC_F4);
+      unregister_code(KC_LALT);
+      break;
+    default:
+      reset_tap_dance(state);
+      break;
+  }
 }
