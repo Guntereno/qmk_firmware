@@ -3,9 +3,10 @@
 #include "version.h"
 
 #define BASE 0
-#define NUMPAD 1
-#define FUNCTION 2
-#define SPECIAL 3
+#define GAME 1
+#define NUMPAD 2
+#define FUNCTION 3
+#define SPECIAL 4
 
 enum custom_keycodes
 {
@@ -32,6 +33,8 @@ qk_tap_dance_action_t tap_dance_actions[] =
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
 {
+    // BASE is a standard QWERTY layout (subtly different from the EZ layout).
+    // Main difference is the split cursor keys (which take some getting used to!)
     [BASE] = LAYOUT_ergodox(
         // Left hand side
         KC_EQL,   KC_1,    KC_2,    KC_3,    KC_4,     KC_5, TD(TD_ESC_CAPS),
@@ -44,7 +47,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
                          KC_END,
         KC_BSPC, KC_DEL, MO(FUNCTION),
 
-        // Right hand side0
+        // Right hand side
         TG(NUMPAD),   KC_6, KC_7,  KC_8,    KC_9,           KC_0,    KC_MINS,
         KC_LBRACKET,  KC_Y, KC_U,  KC_I,    KC_O,           KC_P,    KC_RBRACKET,
                       KC_H, KC_J,  KC_K,    KC_L,           KC_SCLN, KC_QUOT,
@@ -56,6 +59,34 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
         MO(FUNCTION), KC_ENT,                KC_SPC
     ),
 
+    // GAME mode swaps the large thumb cluster to prevent having to reconfigure games
+    // which use the space bar.
+    [GAME] = LAYOUT_ergodox(
+        // Left hand side
+        KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,
+        KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,
+        KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,
+        KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,
+        KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,
+
+                KC_TRNS, KC_TRNS,
+                         KC_TRNS,
+        KC_SPC, KC_ENT,  KC_TRNS,
+
+        // Right hand side
+        KC_TRNS,  KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,
+        KC_TRNS,  KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,
+                  KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,
+        KC_TRNS,  KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,
+                           KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,
+
+        KC_TRNS, KC_TRNS,
+        KC_TRNS,
+        KC_TRNS, KC_DEL,  KC_BSPC
+    ),
+
+    // NUMPAD adds a standard numpad to the right keyboard and has mathematical operators
+    // at the home position of the left. There's also a handy calculator shortcut.
     [NUMPAD] = LAYOUT_ergodox(
         // Left hand side
         KC_NO,    KC_NO,         KC_NO,          KC_NO,      KC_NO,       KC_NO, KC_TRNS,
@@ -68,18 +99,20 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
                           KC_TRNS,
         KC_TRNS, KC_TRNS, KC_NO,
 
-        // Right hand side0
+        // Right hand side
         TG(NUMPAD), KC_NO, KC_NO,         KC_NUMLOCK, KC_KP_SLASH, KC_KP_ASTERISK, KC_KP_MINUS,
         KC_NO,      KC_NO, KC_NO,         KC_P7,      KC_P8,       KC_P9,          KC_KP_PLUS,
                     KC_NO, KC_NO,         KC_P4,      KC_P5,       KC_P6,          KC_KP_ENTER,
         KC_NO,      KC_NO, KC_CALCULATOR, KC_P1,      KC_P2,       KC_P3,          KC_TRNS,
                            KC_KP_ENTER,   KC_KP_0,    KC_KP_0,     KC_KP_DOT,      KC_TRNS,
 
-        KC_TRNS, KC_KP_0,
+        KC_TRNS, KC_TRNS,
         KC_TRNS,
         KC_TRNS, KC_TRNS,   KC_TRNS
     ),
 
+    // FUNCTION replaces the numbers with the function keys, has navigation keys around
+    // the home position on the left side, with mouse controls on the right.
     [FUNCTION] = LAYOUT_ergodox(
       // Left hand side
       KC_NO,    KC_F1,    KC_F2,    KC_F3,   KC_F4,    KC_F5,     KC_F11,
@@ -92,11 +125,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
                     KC_NO,
       KC_NO, KC_NO, KC_TRNS,
 
-      // Right hand side0
-      KC_F12,  KC_F6, KC_F7,         KC_F8,        KC_F9,        KC_F10, KC_NO,
-      KC_NO,   KC_NO, KC_MS_WH_DOWN, KC_MS_UP,     KC_MS_WH_UP,  KC_NO,  KC_NO,
-               KC_NO, KC_MS_LEFT,    KC_MS_DOWN,   KC_MS_RIGHT,  KC_NO,  KC_NO,
-      KC_TRNS, KC_NO, KC_MS_ACCEL0,  KC_MS_ACCEL1, KC_MS_ACCEL2, KC_NO,  KC_TRNS,
+      // Right hand side
+      KC_F12,  KC_F6, KC_F7,         KC_F8,        KC_F9,        KC_F10,  KC_NO,
+      KC_NO,   KC_NO, KC_MS_WH_DOWN, KC_MS_UP,     KC_MS_WH_UP,  KC_NO,   KC_NO,
+               KC_NO, KC_MS_LEFT,    KC_MS_DOWN,   KC_MS_RIGHT,  KC_NO,   KC_NO,
+      KC_TRNS, KC_NO, KC_MS_ACCEL0,  KC_MS_ACCEL1, KC_MS_ACCEL2, KC_NO,   KC_TRNS,
                KC_NO, KC_NO,         KC_TRNS,      KC_TRNS,      KC_TRNS,
 
 
@@ -105,20 +138,22 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
       KC_TRNS, KC_MS_BTN2, KC_MS_BTN1
     ),
 
-
+    // SPECIAL adds less commonly used functions. Media keys on the left home, backlight
+    // controls on the right and safety (tap 3 times) reset and eeprom reset for each side
+    // in the top corners.
     [SPECIAL] = LAYOUT_ergodox(
         // Left hand side
-        TD(TD_SAFETY_RESET),  KC_NO, KC_NO,               KC_NO,             KC_NO,               KC_NO, KC_NO,
-        TD(TD_SAFETY_EEPROM), KC_NO, KC_NO,               KC_AUDIO_VOL_UP,   KC_MEDIA_PLAY_PAUSE, KC_NO, KC_NO,
-        KC_NO,                KC_NO, KC_MEDIA_PREV_TRACK, KC_AUDIO_VOL_DOWN, KC_MEDIA_NEXT_TRACK, KC_NO,
-        KC_NO,                KC_NO, KC_NO,               KC_MUTE,           CK_VRSN,             KC_NO, KC_TRNS,
+        TD(TD_SAFETY_RESET),  KC_NO, KC_NO,               KC_NO,             KC_NO,               KC_NO,    KC_NO,
+        TD(TD_SAFETY_EEPROM), KC_NO, KC_NO,               KC_AUDIO_VOL_UP,   KC_MEDIA_PLAY_PAUSE, KC_NO,    KC_NO,
+        KC_NO,                KC_NO, KC_MEDIA_PREV_TRACK, KC_AUDIO_VOL_DOWN, KC_MEDIA_NEXT_TRACK, TG(GAME),
+        KC_NO,                KC_NO, KC_NO,               KC_MUTE,           CK_VRSN,             KC_NO,    KC_TRNS,
         KC_NO,                KC_NO, KC_NO,               KC_NO,             KC_NO,
 
                 KC_INS, KC_SCROLLLOCK,
                         KC_NO,
         KC_NO,  KC_NO,  KC_NO,
 
-        // Right hand side0
+        // Right hand side
         KC_NO,   KC_NO, KC_NO,   KC_NO,   KC_NO,   KC_NO,   TD(TD_SAFETY_RESET),
         KC_NO,   KC_NO, KC_NO,   KC_NO,   KC_NO,   KC_NO,   TD(TD_SAFETY_EEPROM),
                  KC_NO, BL_TOGG, BL_DEC,  BL_INC,  KC_NO,   KC_NO,
@@ -131,7 +166,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
     ),
 };
 
-void output_version(void) { SEND_STRING(QMK_KEYBOARD "/" QMK_KEYMAP " @ " QMK_VERSION); }
+void output_version(void) {
+  SEND_STRING(QMK_KEYBOARD "/" QMK_KEYMAP " @ " QMK_VERSION);
+}
 
 const macro_t *action_get_macro(keyrecord_t *record, uint8_t id, uint8_t opt) {
   switch (id) {}
@@ -195,7 +232,7 @@ void matrix_init_user(void) {
 void matrix_scan_user(void) {}
 
 // Cached states of current layer and LED states
-static uint8_t g_layer = 0;
+static uint8_t g_layerState = 0;
 static uint8_t g_leds = 0;
 
 // Used to update the states of the LEDs (standard Ergodox)
@@ -204,11 +241,18 @@ void update_leds(void) {
   ergodox_right_led_2_off();
   ergodox_right_led_3_off();
 
-  // Set the num layer and lock states
-  if (g_layer == NUMPAD) {
+  // Second LED has two meanings...
+  if (biton(g_layerState) == NUMPAD) {
     ergodox_right_led_1_on();
-    // Note Num Lock indicator only visible in NUMPAD layer
-    if (IS_LED_ON(g_leds, USB_LED_NUM_LOCK)) ergodox_right_led_2_on();
+    // ... in NUMPAD layer, it shows status of numlock
+    if (IS_LED_ON(g_leds, USB_LED_NUM_LOCK)) {
+      ergodox_right_led_2_on();
+    }
+  } else {
+    // ... otherwise it indicates the state of the GAME layer
+    if (g_layerState & (1 << GAME)) {
+      ergodox_right_led_2_on();
+    }
   }
 
   if (IS_LED_ON(g_leds, USB_LED_CAPS_LOCK)) ergodox_right_led_3_on();
@@ -223,7 +267,7 @@ void led_set_user(uint8_t usb_led) {
 // Runs whenever there is a layer state change.
 uint32_t layer_state_set_user(uint32_t state)
 {
-  g_layer = biton32(state);
+  g_layerState = state;
   update_leds();
   return state;
 };
@@ -249,12 +293,15 @@ void dance_safety_eeprom(qk_tap_dance_state_t *state, void *user_data) {
 void dance_esc_caps_altf4(qk_tap_dance_state_t *state, void *user_data) {
   switch(state->count) {
     case 1:
+      // 1 tap ESC
       tap_code(KC_ESC);
       break;
     case 2:
+      // 2 taps toggles capslock
       tap_code(KC_CAPS);
       break;
     case 3:
+      // 3 taps is alt-f4
       register_code(KC_LALT);
       tap_code(KC_F4);
       unregister_code(KC_LALT);
