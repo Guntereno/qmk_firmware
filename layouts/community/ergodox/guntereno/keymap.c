@@ -143,11 +143,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
     // in the top corners.
     [SPECIAL] = LAYOUT_ergodox(
         // Left hand side
-        TD(TD_SAFETY_RESET),  KC_NO, KC_NO,               KC_NO,             KC_NO,               KC_NO,    KC_NO,
-        TD(TD_SAFETY_EEPROM), KC_NO, KC_NO,               KC_AUDIO_VOL_UP,   KC_MEDIA_PLAY_PAUSE, KC_NO,    KC_NO,
-        KC_NO,                KC_NO, KC_MEDIA_PREV_TRACK, KC_AUDIO_VOL_DOWN, KC_MEDIA_NEXT_TRACK, TG(GAME),
-        KC_NO,                KC_NO, KC_NO,               KC_MUTE,           CK_VRSN,             KC_NO,    KC_TRNS,
-        KC_NO,                KC_NO, KC_NO,               KC_NO,             KC_NO,
+        TD(TD_SAFETY_RESET),  BL_TOGG, BL_STEP,             BL_BRTG,           KC_NO,               KC_NO,    KC_NO,
+        TD(TD_SAFETY_EEPROM), KC_NO,   KC_NO,               KC_AUDIO_VOL_UP,   KC_MEDIA_PLAY_PAUSE, KC_NO,    KC_NO,
+        KC_NO,                KC_NO,   KC_MEDIA_PREV_TRACK, KC_AUDIO_VOL_DOWN, KC_MEDIA_NEXT_TRACK, TG(GAME),
+        KC_NO,                KC_NO,   KC_NO,               KC_MUTE,           CK_VRSN,             KC_NO,    KC_TRNS,
+        KC_NO,                KC_NO,   KC_NO,               KC_NO,             KC_NO,
 
                 KC_INS, KC_SCROLLLOCK,
                         KC_NO,
