@@ -13,7 +13,9 @@ enum custom_keycodes
   PLACEHOLDER = SAFE_RANGE, // can always be here
   CK_VRSN,
   CK_LCTR,
-  CK_RCTR
+  CK_RCTR,
+  CK_LFUN,
+  CK_RFUN
 };
 
 enum tapdance_definitions { TD_ESC_CAPS, TD_PAUSE_PRNTSCRN, TD_SAFETY_RESET, TD_SAFETY_EEPROM };
@@ -45,7 +47,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
 
                  KC_GRV, KC_HOME,
                          KC_END,
-        KC_BSPC, KC_DEL, MO(FUNCTION),
+        KC_BSPC, KC_DEL, CK_LFUN,
 
         // Right hand side
         TG(NUMPAD),   KC_6, KC_7,  KC_8,    KC_9,    KC_0,           KC_MINS,
@@ -56,7 +58,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
 
         KC_PGUP,      TD(TD_PAUSE_PRNTSCRN),
         KC_PGDOWN,
-        MO(FUNCTION), KC_ENT,                KC_SPC
+        CK_RFUN,      KC_ENT,                KC_SPC
     ),
 
     // GAME mode swaps the large thumb cluster to prevent having to reconfigure games
@@ -143,7 +145,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
     // in the top corners.
     [SPECIAL] = LAYOUT_ergodox(
         // Left hand side
-        TD(TD_SAFETY_RESET),  BL_TOGG, BL_STEP,             BL_BRTG,           KC_NO,               KC_NO,    KC_NO,
+        TD(TD_SAFETY_RESET),  KC_NO,   KC_NO,               KC_NO,             KC_NO,               KC_NO,    KC_NO,
         TD(TD_SAFETY_EEPROM), KC_NO,   KC_NO,               KC_AUDIO_VOL_UP,   KC_MEDIA_PLAY_PAUSE, KC_NO,    KC_NO,
         KC_NO,                KC_NO,   KC_MEDIA_PREV_TRACK, KC_AUDIO_VOL_DOWN, KC_MEDIA_NEXT_TRACK, TG(GAME),
         KC_NO,                KC_NO,   KC_NO,               KC_MUTE,           CK_VRSN,             KC_NO,    KC_TRNS,
@@ -175,22 +177,110 @@ const macro_t *action_get_macro(keyrecord_t *record, uint8_t id, uint8_t opt) {
   return MACRO_NONE;
 };
 
-void handle_mod_tap(bool pressed, uint16_t* timer, uint16_t mod_code, const char* str)
+
+void handle_mod_tap_pressed(uint16_t keycode)
+{
+  switch (keycode)
+  {
+    case CK_LCTR:
+    {
+      register_code(KC_LCTL);
+      return;
+    }
+    case CK_RCTR:
+    {
+      register_code(KC_RCTL);
+      return;
+    }
+    case CK_LFUN:
+    case CK_RFUN:
+    {
+      layer_on(FUNCTION);
+      layer_on(FUNCTION);
+      return;
+    }
+  }
+}
+
+void handle_mod_tap_released(uint16_t keycode)
+{
+  switch (keycode)
+  {
+    case CK_LCTR:
+    {
+      unregister_code(KC_LCTL);
+      return;
+    }
+    case CK_RCTR:
+    {
+      unregister_code(KC_RCTL);
+      return;
+    }
+    case CK_LFUN:
+    case CK_RFUN:
+    {
+      layer_off(FUNCTION);
+      layer_off(FUNCTION);
+      return;
+    }
+  }
+}
+
+void handle_mod_tap_tapped(uint16_t keycode)
+{
+  switch (keycode)
+  {
+    case CK_LCTR:
+    {
+      send_string("{");
+      return;
+    }
+    case CK_RCTR:
+    {
+      send_string("}");
+      return;
+    }
+    case CK_LFUN:
+    {
+      send_string("[");
+      return;
+    }
+    case CK_RFUN:
+    {
+      send_string("]");
+      return;
+    }
+  }
+}
+
+void handle_mod_tap(
+    uint16_t keycode,
+    bool pressed,
+    uint16_t* timer,
+    void (*handle_pressed)(uint16_t keycode),
+    void (*handle_released)(uint16_t keycode),
+    void (*handle_tapped)(uint16_t keycode))
 {
   if(pressed)
   {
     *timer = timer_read();
-    register_code(mod_code);
+    handle_pressed(keycode);
   }
   else
   {
-    unregister_code(mod_code);
+    handle_released(keycode);
     if (timer_elapsed(*timer) < TAPPING_TERM)
     {
-      send_string(str); // Change the character(s) to be sent on tap here
+      handle_tapped(keycode);
     }
   }
 }
+
+#define MOD_TAP_HANDLER() \
+  ({ \
+  static uint16_t timer; \
+  handle_mod_tap(keycode, record->event.pressed, &timer, handle_mod_tap_pressed, handle_mod_tap_released, handle_mod_tap_tapped); \
+  })
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record)
 {
@@ -206,14 +296,22 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record)
     }
     case CK_LCTR:
     {
-      static uint16_t timer;
-      handle_mod_tap(record->event.pressed, &timer, KC_LCTL, "{");
+      MOD_TAP_HANDLER();
       return false;
     }
     case CK_RCTR:
     {
-      static uint16_t timer;
-      handle_mod_tap(record->event.pressed, &timer, KC_RCTL, "}");
+      MOD_TAP_HANDLER();
+      return false;
+    }
+    case CK_LFUN:
+    {
+      MOD_TAP_HANDLER();
+      return false;
+    }
+    case CK_RFUN:
+    {
+      MOD_TAP_HANDLER();
       return false;
     }
   }
