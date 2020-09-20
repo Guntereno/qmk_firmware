@@ -62,18 +62,18 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
     ),
 
     // GAME mode swaps the large thumb cluster to prevent having to reconfigure games
-    // which use the space bar.
+    // which use the space bar and offsets the keys so WASD is in the home position.
     [GAME] = LAYOUT_ergodox(
         // Left hand side
-        KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,
-        KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,
-        KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,
-        KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,
+        KC_TRNS, KC_5,    KC_1,    KC_2,    KC_3,    KC_4, KC_TRNS,
+        KC_TRNS, KC_T,    KC_Q,    KC_W,    KC_E,    KC_R, KC_TRNS,
+        KC_TRNS, KC_G,    KC_A,    KC_S,    KC_D,    KC_F,
+        KC_TRNS, KC_B,    KC_Z,    KC_X,    KC_C,    KC_V, KC_TRNS,
         KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,
 
                 KC_TRNS, KC_TRNS,
                          KC_TRNS,
-        KC_SPC, KC_ENT,  KC_TRNS,
+        KC_SPC, KC_ENT,  KC_LOCK,
 
         // Right hand side
         KC_TRNS,  KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,
@@ -148,7 +148,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
         TD(TD_SAFETY_RESET),  KC_NO,   KC_NO,               KC_NO,             KC_NO,               KC_NO,    KC_NO,
         TD(TD_SAFETY_EEPROM), KC_NO,   KC_NO,               KC_AUDIO_VOL_UP,   KC_MEDIA_PLAY_PAUSE, KC_NO,    KC_NO,
         KC_NO,                KC_NO,   KC_MEDIA_PREV_TRACK, KC_AUDIO_VOL_DOWN, KC_MEDIA_NEXT_TRACK, TG(GAME),
-        KC_NO,                KC_NO,   KC_NO,               KC_MUTE,           CK_VRSN,             KC_NO,    KC_TRNS,
+        KC_NO,                KC_NO,   KC_NO,               KC_MUTE,           CK_VRSN,             KC_NO,    KC_NO,
         KC_NO,                KC_NO,   KC_NO,               KC_NO,             KC_NO,
 
                 KC_INS, KC_SCROLLLOCK,
@@ -156,11 +156,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
         KC_NO,  KC_NO,  KC_NO,
 
         // Right hand side
-        KC_NO,   KC_NO, KC_NO,   KC_NO,   KC_NO,   KC_NO,   TD(TD_SAFETY_RESET),
-        KC_NO,   KC_NO, KC_NO,   KC_NO,   KC_NO,   KC_NO,   TD(TD_SAFETY_EEPROM),
-                 KC_NO, BL_TOGG, BL_DEC,  BL_INC,  KC_NO,   KC_NO,
-        KC_TRNS, KC_NO, KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_TRNS,
-                        KC_NO,   KC_NO,   KC_TRNS, KC_TRNS, KC_TRNS,
+        KC_NO, KC_NO, KC_NO,   KC_NO,   KC_NO,   KC_NO,   TD(TD_SAFETY_RESET),
+        KC_NO, KC_NO, KC_NO,   KC_NO,   KC_NO,   KC_NO,   TD(TD_SAFETY_EEPROM),
+               KC_NO, BL_TOGG, BL_DEC,  BL_INC,  KC_NO,   KC_NO,
+        KC_NO, KC_NO, KC_NO,   KC_NO,   KC_NO,   KC_NO,   KC_TRNS,
+                      KC_NO,   KC_NO,   KC_TRNS, KC_TRNS, KC_TRNS,
 
         KC_NO, KC_NO,
         KC_NO,
@@ -168,11 +168,13 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] =
     ),
 };
 
-void output_version(void) {
+void output_version(void)
+{
   SEND_STRING(QMK_KEYBOARD "/" QMK_KEYMAP " @ " QMK_VERSION);
 }
 
-const macro_t *action_get_macro(keyrecord_t *record, uint8_t id, uint8_t opt) {
+const macro_t *action_get_macro(keyrecord_t *record, uint8_t id, uint8_t opt)
+{
   switch (id) {}
   return MACRO_NONE;
 };

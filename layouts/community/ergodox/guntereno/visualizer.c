@@ -21,10 +21,9 @@ enum layer_indicator
 // stopped. This can be done by either double buffering it or by using constant strings
 static void get_visualizer_layer_and_color(visualizer_state_t* state)
 {
-    uint8_t saturation = 60;
+    uint8_t saturation = 128;
     bool capsLock = (state->status.leds & (1u << USB_LED_CAPS_LOCK));
-    bool gameLayer = ((state->status.layer & LAYER_GAME) != 0);
-    if (capsLock || gameLayer)
+    if (capsLock)
     {
         saturation = 255;
     }
@@ -43,6 +42,12 @@ static void get_visualizer_layer_and_color(visualizer_state_t* state)
     {
         state->target_lcd_color = LCD_COLOR(118, saturation, 255);
         state->layer_text = "Numpad";
+    }
+    else if ((state->status.layer & LAYER_GAME) != 0)
+    {
+        saturation = 255;
+        state->target_lcd_color = LCD_COLOR(113, saturation, saturation);
+        state->layer_text = "Game";
     }
     else
     {
