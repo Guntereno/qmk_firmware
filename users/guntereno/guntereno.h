@@ -1,0 +1,14 @@
+#ifndef CONFIG_USER_H
+#define CONFIG_USER_H 1
+
+#define PERMISSIVE_HOLD
+#define EE_HANDS
+
+#undef TAPPING_TERM
+#define TAPPING_TERM 150
+
+#define SPLIT_LAYER_STATE_ENABLE
+#define SPLIT_LED_STATE_ENABLE
+#define SPLIT_ST7565_ENABLE
+
+#endif
