@@ -16,12 +16,9 @@
  * - Mirrors layer state
  * - Mirrors LED state
  * - Mirrors mod state
- * - Replaces old SPLIT_LAYER_STATE_ENABLE / SPLIT_LED_STATE_ENABLE
  */
 #define SPLIT_TRANSPORT_MIRROR
 
-/* If your board uses EEPROM to determine handedness (Infinity did),
- * keep EE_HANDS. If you later move to a standard Ergodox EZ, you can
- * remove this and set handedness via config.
+/* Uses EEPROM to determine handedness
  */
 #define EE_HANDS

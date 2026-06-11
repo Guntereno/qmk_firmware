@@ -3,9 +3,9 @@
 #include "mousekey.h"
 
 #define BASE 0
-#define NUMPAD 1
-#define FUNCTION 2
-#define SPECIAL 3
+#define FUNCTION 1
+#define SPECIAL 2
+#define NUMPAD 3
 
 enum custom_keycodes {
     PLACEHOLDER = SAFE_RANGE,
@@ -16,8 +16,9 @@ enum custom_keycodes {
     CK_RCTR,
     CK_LFUN,
     CK_RFUN,
-    CK_MOCK,
-    CK_TD_TOGGLE
+    CK_MOCK_TOGGLE,
+    CK_TD_TOGGLE,
+    CK_GLOBE_TOGGLE
 };
 
 enum tapdance_definitions {
@@ -31,8 +32,14 @@ static void dance_safety_reset(tap_dance_state_t  *state, void *user_data);
 static void dance_safety_eeprom(tap_dance_state_t  *state, void *user_data);
 static void dance_esc_caps_altf4(tap_dance_state_t  *state, void *user_data);
 
-static bool g_tapdance_enabled = false;
-static bool g_mock_text = false;
+typedef struct {
+    unsigned tapdance : 1;
+    unsigned mocking : 1;
+    unsigned mac : 1; // Switches the right 'fn' key to send Caps Lock, for mapping to the globe key on macOS
+} ModeFlags;
+
+static ModeFlags g_flags = {0};
+
 
 tap_dance_action_t tap_dance_actions[] = {
     [TD_ESC_CAPS]       = ACTION_TAP_DANCE_FN(dance_esc_caps_altf4),
@@ -66,32 +73,6 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         KC_PGUP, TD(TD_PAUSE_PRNTSCRN),
         KC_PGDN,
         CK_RFUN, KC_ENT, KC_SPC
-    ),
-
-/* NUMPAD
- * Adds a standard numpad to the right keyboard and has mathematical operators
- * at the home position of the left. There's also a handy calculator shortcut.
- */
-    [NUMPAD] = LAYOUT_ergodox(
-        KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_TRNS,
-        KC_NO, KC_NO, KC_NUHS, LSFT(KC_4), LSFT(KC_3), KC_NO, KC_NO,
-        KC_TRNS, KC_KP_SLASH, KC_KP_ASTERISK, KC_KP_PLUS, KC_KP_MINUS, KC_NO,
-        KC_TRNS, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,
-        KC_TRNS, KC_TRNS, KC_TRNS, KC_NO, KC_NO,
-
-                 KC_NO, KC_TRNS,
-                        KC_TRNS,
-        KC_TRNS, KC_TRNS, KC_NO,
-
-        TG(NUMPAD), KC_NO, KC_NO, KC_NUM_LOCK, KC_KP_SLASH, KC_KP_ASTERISK, KC_KP_MINUS,
-        KC_NO, KC_NO, KC_NO, KC_P7, KC_P8, KC_P9, KC_KP_PLUS,
-                 KC_NO, KC_NO, KC_P4, KC_P5, KC_P6, KC_KP_ENTER,
-        KC_NO, KC_NO, KC_CALCULATOR, KC_P1, KC_P2, KC_P3, KC_TRNS,
-                        KC_KP_ENTER, KC_KP_0, KC_KP_0, KC_KP_DOT, KC_TRNS,
-
-        KC_TRNS, KC_NO,
-        KC_TRNS,
-        KC_TRNS, KC_TRNS, KC_TRNS
     ),
 
 /* FUNCTION
@@ -128,7 +109,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [SPECIAL] = LAYOUT_ergodox(
         TD(TD_SAFETY_RESET), KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,
         TD(TD_SAFETY_EEPROM), KC_NO, KC_NO, KC_AUDIO_VOL_UP, KC_MEDIA_PLAY_PAUSE, CK_TD_TOGGLE, KC_NO,
-        KC_NO, KC_NO, KC_MEDIA_PREV_TRACK, KC_AUDIO_VOL_DOWN, KC_MEDIA_NEXT_TRACK, KC_NO,
+        KC_NO, KC_NO, KC_MEDIA_PREV_TRACK, KC_AUDIO_VOL_DOWN, KC_MEDIA_NEXT_TRACK, CK_GLOBE_TOGGLE,
         KC_NO, KC_NO, KC_NO, KC_MUTE, CK_VRSN, KC_NO, KC_NO,
         KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,
 
@@ -139,12 +120,38 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, TD(TD_SAFETY_RESET),
         KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, TD(TD_SAFETY_EEPROM),
                  KC_NO, BL_TOGG, KC_NO, KC_NO, KC_NO, KC_NO,
-        KC_NO, KC_NO, CK_MOCK, KC_NO, KC_NO, KC_NO, KC_TRNS,
+        KC_NO, KC_NO, CK_MOCK_TOGGLE, KC_NO, KC_NO, KC_NO, KC_TRNS,
                  KC_NO, KC_NO, KC_TRNS, KC_TRNS, KC_TRNS,
 
         KC_NO, KC_NO,
         KC_NO,
         KC_NO, KC_NO, KC_NO
+    ),
+
+/* NUMPAD
+ * Adds a standard numpad to the right keyboard and has mathematical operators
+ * at the home position of the left. There's also a handy calculator shortcut.
+ */
+    [NUMPAD] = LAYOUT_ergodox(
+        KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_TRNS,
+        KC_NO, KC_NO, KC_NUHS, LSFT(KC_4), LSFT(KC_3), KC_NO, KC_NO,
+        KC_TRNS, KC_KP_SLASH, KC_KP_ASTERISK, KC_KP_PLUS, KC_KP_MINUS, KC_NO,
+        KC_TRNS, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,
+        KC_TRNS, KC_TRNS, KC_TRNS, KC_NO, KC_NO,
+
+                 KC_NO, KC_TRNS,
+                        KC_TRNS,
+        KC_TRNS, KC_TRNS, KC_NO,
+
+        TG(NUMPAD), KC_NO, KC_NO, KC_NUM_LOCK, KC_KP_SLASH, KC_KP_ASTERISK, KC_KP_MINUS,
+        KC_NO, KC_NO, KC_NO, KC_P7, KC_P8, KC_P9, KC_KP_PLUS,
+                 KC_NO, KC_NO, KC_P4, KC_P5, KC_P6, KC_KP_ENTER,
+        KC_NO, KC_NO, KC_CALCULATOR, KC_P1, KC_P2, KC_P3, KC_TRNS,
+                        KC_KP_ENTER, KC_KP_0, KC_KP_0, KC_KP_DOT, KC_TRNS,
+
+        KC_TRNS, KC_NO,
+        KC_TRNS,
+        KC_TRNS, KC_TRNS, KC_TRNS
     )
 };
 
@@ -158,6 +165,26 @@ void toggle_caps(void) {
     tap_code(KC_CAPS);
 }
 
+void rfun_pressed(void)
+{
+    if (g_flags.mac) {
+        register_code(KC_CAPS);
+    }
+    else {
+        layer_on(FUNCTION);
+    }
+}
+
+void rfun_released(void)
+{
+    if (g_flags.mac) {
+        unregister_code(KC_CAPS);
+    }
+    else {
+        layer_off(FUNCTION);
+    }
+}
+
 /* Mod-tap logic preserved exactly */
 void handle_mod_tap_pressed(uint16_t keycode) {
     switch (keycode) {
@@ -165,8 +192,8 @@ void handle_mod_tap_pressed(uint16_t keycode) {
         case CK_RSFT: register_code(KC_RSFT); return;
         case CK_LCTR: register_code(KC_LCTL); return;
         case CK_RCTR: register_code(KC_RCTL); return;
-        case CK_LFUN:
-        case CK_RFUN: layer_on(FUNCTION); return;
+        case CK_LFUN: layer_on(FUNCTION); return;
+        case CK_RFUN: rfun_pressed(); return;
     }
 }
 
@@ -176,8 +203,8 @@ void handle_mod_tap_released(uint16_t keycode) {
         case CK_RSFT: unregister_code(KC_RSFT); return;
         case CK_LCTR: unregister_code(KC_LCTL); return;
         case CK_RCTR: unregister_code(KC_RCTL); return;
-        case CK_LFUN:
-        case CK_RFUN: layer_off(FUNCTION); return;
+        case CK_LFUN: layer_off(FUNCTION); return;
+        case CK_RFUN: rfun_released(); return;
     }
 }
 
@@ -205,7 +232,7 @@ void handle_mod_tap(uint16_t keycode, bool pressed, uint16_t *timer,
 
     released_fn(keycode);
 
-    if (!g_tapdance_enabled) return;
+    if (!g_flags.tapdance) return;
 
     if (timer_elapsed(*timer) < TAPPING_TERM) {
         tapped_fn(keycode);
@@ -220,7 +247,7 @@ void handle_mod_tap(uint16_t keycode, bool pressed, uint16_t *timer,
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
     // Mock mode alternates the caps each time an alphabet character is pressed
-    if (g_mock_text && record->event.pressed) {
+    if (g_flags.mocking && record->event.pressed) {
         if (keycode >= KC_A && keycode <= KC_Z) {
             toggle_caps();
         }
@@ -240,16 +267,22 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             MOD_TAP_HANDLER();
             return false;
 
-        case CK_MOCK:
+        case CK_MOCK_TOGGLE:
             if (record->event.pressed) {
-                g_mock_text = !g_mock_text;
-                if (g_mock_text) toggle_caps();
+                g_flags.mocking = !g_flags.mocking;
+                if (g_flags.mocking) toggle_caps();
             }
             return false;
 
         case CK_TD_TOGGLE:
             if (record->event.pressed) {
-                g_tapdance_enabled = !g_tapdance_enabled;
+                g_flags.tapdance = !g_flags.tapdance;
+            }
+            return false;
+
+        case CK_GLOBE_TOGGLE:
+            if (record->event.pressed) {
+                g_flags.mac = !g_flags.mac;
             }
             return false;
     }
