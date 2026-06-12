@@ -1,5 +1,6 @@
-# Enable tap dance
-TAP_DANCE_ENABLE = yes
 
-# Use your shared userspace
+TAP_DANCE_ENABLE = yes
 USER_NAME = guntereno
+
+ST7565_ENABLE = yes
+LED_MATRIX_ENABLE = yes

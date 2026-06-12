@@ -2,6 +2,8 @@
 #include "version.h"
 #include "mousekey.h"
 
+/* ---------- Constants ---------- */
+
 #define BASE 0
 #define FUNCTION 1
 #define SPECIAL 2
@@ -28,9 +30,14 @@ enum tapdance_definitions {
     TD_SAFETY_EEPROM
 };
 
+/* ---------- Forward Declarations ---------- */
+
 static void dance_safety_reset(tap_dance_state_t  *state, void *user_data);
 static void dance_safety_eeprom(tap_dance_state_t  *state, void *user_data);
 static void dance_esc_caps_altf4(tap_dance_state_t  *state, void *user_data);
+
+
+/* ---------- Types ---------- */
 
 typedef struct {
     unsigned tapdance : 1;
@@ -38,8 +45,10 @@ typedef struct {
     unsigned mac : 1; // Switches the right 'fn' key to send Caps Lock, for mapping to the globe key on macOS
 } ModeFlags;
 
-static ModeFlags g_flags = {0};
 
+/* ---------- Global Variables ---------- */
+
+static ModeFlags g_flags = {0};
 
 tap_dance_action_t tap_dance_actions[] = {
     [TD_ESC_CAPS]       = ACTION_TAP_DANCE_FN(dance_esc_caps_altf4),
@@ -47,6 +56,9 @@ tap_dance_action_t tap_dance_actions[] = {
     [TD_SAFETY_RESET]   = ACTION_TAP_DANCE_FN(dance_safety_reset),
     [TD_SAFETY_EEPROM]  = ACTION_TAP_DANCE_FN(dance_safety_eeprom),
 };
+
+
+/* ---------- Layer Maps ---------- */
 
 /* BASE
  * Standard QWERTY layout (subtly different from the EZ layout).
@@ -66,7 +78,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
         TG(NUMPAD), KC_6, KC_7, KC_8, KC_9, KC_0, KC_MINS,
         KC_LBRC, KC_Y, KC_U, KC_I, KC_O, KC_P, KC_RBRC,
-                      KC_H, KC_J, KC_K, KC_L, KC_SCLN, KC_QUOT,
+        KC_H, KC_J, KC_K, KC_L, KC_SCLN, KC_QUOT,
         MO(SPECIAL), KC_N, KC_M, KC_COMM, KC_DOT, KC_SLSH, CK_RSFT,
                             KC_UP, KC_DOWN, KC_RALT, KC_APPLICATION, CK_RCTR,
 
@@ -117,11 +129,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
                         KC_NO,
         KC_NO, KC_NO, KC_NO,
 
-        KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, TD(TD_SAFETY_RESET),
-        KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, TD(TD_SAFETY_EEPROM),
-                 KC_NO, BL_TOGG, KC_NO, KC_NO, KC_NO, KC_NO,
-        KC_NO, KC_NO, CK_MOCK_TOGGLE, KC_NO, KC_NO, KC_NO, KC_TRNS,
-                 KC_NO, KC_NO, KC_TRNS, KC_TRNS, KC_TRNS,
+        KC_NO, KC_NO,   KC_NO,          KC_NO,   KC_NO,   KC_NO,   TD(TD_SAFETY_RESET),
+        KC_NO, KC_NO,   LM_PREV,        LM_BRIU, LM_NEXT, LM_FLGN, TD(TD_SAFETY_EEPROM),
+               LM_TOGG, LM_SPDD,        LM_BRID, LM_SPDU, LM_FLGP, KC_NO,
+        KC_NO, KC_NO,   CK_MOCK_TOGGLE, KC_NO,   KC_NO,   KC_NO,   KC_TRNS,
+               KC_NO,   KC_NO,          KC_TRNS, KC_TRNS, KC_TRNS,
 
         KC_NO, KC_NO,
         KC_NO,
@@ -320,3 +332,99 @@ static void dance_esc_caps_altf4(tap_dance_state_t *state, void *user_data) {
             break;
     }
 }
+
+
+/* ---------- LCD Screens ---------- */
+
+static void set_lcd_color_for_layer(layer_state_t state) {
+    switch (get_highest_layer(state)) {
+    case BASE:
+        ergodox_infinity_lcd_color (UINT16_MAX / 2, UINT16_MAX / 2, UINT16_MAX / 2);
+        break;
+    case FUNCTION:
+        ergodox_infinity_lcd_color (0x00,  UINT16_MAX, UINT16_MAX);
+        break;
+    case SPECIAL:
+        ergodox_infinity_lcd_color (UINT16_MAX,  0x00, UINT16_MAX);
+        break;
+    case NUMPAD:
+        ergodox_infinity_lcd_color (UINT16_MAX,  UINT16_MAX, 0x00);
+        break;
+    default:
+        ergodox_infinity_lcd_color (UINT16_MAX,  UINT16_MAX, UINT16_MAX);
+        break;
+    }
+}
+
+void matrix_init_user(void) {
+    ergodox_board_led_off();
+    ergodox_right_led_1_off();
+    ergodox_right_led_2_off();
+    ergodox_right_led_3_off();
+}
+
+
+void matrix_scan_user(void) {};
+
+layer_state_t layer_state_set_user(layer_state_t state) {
+    set_lcd_color_for_layer(state);
+    return state;
+}
+
+#ifdef ST7565_ENABLE
+
+void st7565_task_user(void) {
+    if (is_keyboard_master())
+    {
+        // Host Keyboard Layer Status
+        st7565_write_P(PSTR("Layer: "), false);
+
+        switch (get_highest_layer(layer_state)) {
+            case BASE:
+                st7565_write_P(PSTR("Default\n"), false);
+                break;
+            case FUNCTION:
+                st7565_write_P(PSTR("Function\n"), false);
+                break;
+            case SPECIAL:
+                st7565_write_P(PSTR("Special\n"), false);
+                break;
+            case NUMPAD:
+                st7565_write_P(PSTR("Numpad\n"), false);
+                break;
+            default:
+                st7565_write_ln_P(PSTR("Undefined\n"), false);
+        }
+
+        // Host Keyboard LED Status
+        led_t led_state = host_keyboard_led_state();
+        st7565_write_P(led_state.num_lock ? PSTR("NUM ") : PSTR("    "), false);
+        st7565_write_P(led_state.caps_lock ? PSTR("CAP ") : PSTR("    "), false);
+        st7565_write_P(led_state.scroll_lock ? PSTR("SCR ") : PSTR("    "), false);
+
+        st7565_write_P("\n", false);
+
+        st7565_write_P(g_flags.tapdance ? PSTR("TAP ") : PSTR("    "), false);
+        st7565_write_P(g_flags.mocking ? PSTR("MCK ") : PSTR("    "), false);
+        st7565_write_P(g_flags.mac ? PSTR("MAC ") : PSTR("    "), false);
+
+        st7565_write_P("\n", false);
+
+        const char* effect_name = led_matrix_get_mode_name(led_matrix_get_mode());
+        st7565_write_P(effect_name, false);
+    }
+    else
+    {
+        // Draw logo
+        static const char qmk_logo[] = {
+            0x80, 0x81, 0x82, 0x83, 0x84, 0x85, 0x86, 0x87, 0x88, 0x89, 0x8A, 0x8B, 0x8C, 0x8D, 0x8E, 0x8F, 0x90, 0x91, 0x92, 0x93, 0x94,
+            0xA0, 0xA1, 0xA2, 0xA3, 0xA4, 0xA5, 0xA6, 0xA7, 0xA8, 0xA9, 0xAA, 0xAB, 0xAC, 0xAD, 0xAE, 0xAF, 0xB0, 0xB1, 0xB2, 0xB3, 0xB4,
+            0xC0, 0xC1, 0xC2, 0xC3, 0xC4, 0xC5, 0xC6, 0xC7, 0xC8, 0xC9, 0xCA, 0xCB, 0xCC, 0xCD, 0xCE, 0xCF, 0xD0, 0xD1, 0xD2, 0xD3, 0xD4, 0x00
+        };
+
+        st7565_write(qmk_logo, false);
+        st7565_write("  Infinity  Ergodox  ", false);
+    }
+}
+
+#endif

@@ -12,13 +12,16 @@
 
 /* ---------- Split Keyboard Behaviour ---------- */
 
-/* Use modern split transport mirroring:
- * - Mirrors layer state
- * - Mirrors LED state
- * - Mirrors mod state
- */
 #define SPLIT_TRANSPORT_MIRROR
+#define SPLIT_LAYER_STATE_ENABLE
+#define SPLIT_LED_STATE_ENABLE
+#define SPLIT_ST7565_ENABLE
 
-/* Uses EEPROM to determine handedness
- */
+/* ---------- Uses EEPROM to determine handedness ---------- */
+
 #define EE_HANDS
+
+
+/* ---------- Allow naming of LED matrix modes for use on ST7565 ---------- */
+
+#define LED_MATRIX_MODE_NAME_ENABLE
