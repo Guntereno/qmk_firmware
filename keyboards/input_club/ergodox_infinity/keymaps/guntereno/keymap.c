@@ -2,6 +2,7 @@
 #include "version.h"
 #include "mousekey.h"
 
+
 /* ---------- Constants ---------- */
 
 #define BASE 0
@@ -180,7 +181,7 @@ void toggle_caps(void) {
 void rfun_pressed(void)
 {
     if (g_flags.mac) {
-        register_code(KC_CAPS);
+        register_code(KC_F20);
     }
     else {
         layer_on(FUNCTION);
@@ -190,7 +191,7 @@ void rfun_pressed(void)
 void rfun_released(void)
 {
     if (g_flags.mac) {
-        unregister_code(KC_CAPS);
+        unregister_code(KC_F20);
     }
     else {
         layer_off(FUNCTION);
@@ -256,7 +257,21 @@ void handle_mod_tap(uint16_t keycode, bool pressed, uint16_t *timer,
        handle_mod_tap(keycode, record->event.pressed, &timer, \
                       handle_mod_tap_pressed, handle_mod_tap_released, handle_mod_tap_tapped); })
 
+
+static void trigger_hand_animation(bool is_left);
+
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+
+#ifdef ST7565_ENABLE
+    if (record->event.pressed) {
+        const uint8_t row = record->event.key.row;
+        if (row < 9) {
+            trigger_hand_animation(true);
+        } else {
+            trigger_hand_animation(false);
+        }
+    }
+#endif
 
     // Mock mode alternates the caps each time an alphabet character is pressed
     if (g_flags.mocking && record->event.pressed) {
@@ -335,23 +350,53 @@ static void dance_esc_caps_altf4(tap_dance_state_t *state, void *user_data) {
 
 
 /* ---------- LCD Screens ---------- */
+#ifdef ST7565_ENABLE
+
+
+/* Colours to match Scrabble keycaps */
+#define COLOUR_TAN 0xeee0c1
+#define COLOUR_PINK 0xffc0b4
+#define COLOUR_LIGHT_BLUE 0xd2e3e2
+#define COLOUR_DARK_BLUE 0x70c9e3
+#define COLOUR_RED 0xff9e80
+
+#define EXPAND_HEX(hex) \
+    (((((hex) >> 16) & 0xFF) * 257)), \
+    (((((hex) >> 8)  & 0xFF) * 257)), \
+    ((((hex)         & 0xFF) * 257))
+
+#define HAND_ANIM_DELAY_MS 200
+
+#define BONGO_CAT_WIDTH 6
+#define BONGO_CAT_HEIGHT 3
+#define ANIM_SPEED_MS 100
+
+static char bongo_cat_buffer[BONGO_CAT_HEIGHT][BONGO_CAT_WIDTH + 1] = {
+    {0x80, 0x81, 0x82, 0x83, 0x84, 0x85, 0x00},
+    {0xA0, 0xA1, 0xA2, 0xA3, 0xA4, 0xA5, 0x00},
+    {0xC0, 0xC1, 0xC2, 0xC3, 0xC4, 0xC5, 0x00}
+};
+
+static uint16_t left_hand_timer = 0;
+static uint16_t right_hand_timer = 0;
+static bool left_hand_down = false;
+static bool right_hand_down = false;
 
 static void set_lcd_color_for_layer(layer_state_t state) {
     switch (get_highest_layer(state)) {
-    case BASE:
-        ergodox_infinity_lcd_color (UINT16_MAX / 2, UINT16_MAX / 2, UINT16_MAX / 2);
-        break;
+
     case FUNCTION:
-        ergodox_infinity_lcd_color (0x00,  UINT16_MAX, UINT16_MAX);
+        ergodox_infinity_lcd_color(EXPAND_HEX(COLOUR_RED));
         break;
     case SPECIAL:
-        ergodox_infinity_lcd_color (UINT16_MAX,  0x00, UINT16_MAX);
+        ergodox_infinity_lcd_color(EXPAND_HEX(COLOUR_DARK_BLUE));
         break;
     case NUMPAD:
-        ergodox_infinity_lcd_color (UINT16_MAX,  UINT16_MAX, 0x00);
+        ergodox_infinity_lcd_color(EXPAND_HEX(COLOUR_PINK));
         break;
+    case BASE:
     default:
-        ergodox_infinity_lcd_color (UINT16_MAX,  UINT16_MAX, UINT16_MAX);
+        ergodox_infinity_lcd_color(EXPAND_HEX(COLOUR_TAN));
         break;
     }
 }
@@ -361,70 +406,124 @@ void matrix_init_user(void) {
     ergodox_right_led_1_off();
     ergodox_right_led_2_off();
     ergodox_right_led_3_off();
+
+    set_lcd_color_for_layer(layer_state);
 }
 
 
 void matrix_scan_user(void) {};
 
-layer_state_t layer_state_set_user(layer_state_t state) {
-    set_lcd_color_for_layer(state);
-    return state;
+
+void animate_hand_left(bool is_up)
+{
+    if (is_up) {
+        bongo_cat_buffer[1][0] = 0xA0;
+        bongo_cat_buffer[1][1] = 0xA1;
+        bongo_cat_buffer[2][0] = 0xC1;
+        bongo_cat_buffer[2][1] = 0xC2;
+    }
+    else {
+        bongo_cat_buffer[1][0] = 0x86;
+        bongo_cat_buffer[1][1] = 0x87;
+        bongo_cat_buffer[2][0] = 0xA6;
+        bongo_cat_buffer[2][1] = 0xA7;
+    }
 }
 
-#ifdef ST7565_ENABLE
+void animate_hand_right(bool is_up)
+{
+    if (is_up) {
+        bongo_cat_buffer[1][3] = 0xA3;
+        bongo_cat_buffer[1][4] = 0xA4;
+        bongo_cat_buffer[2][4] = 0xC3;
+        bongo_cat_buffer[2][4] = 0xC4;
+    }
+    else {
+        bongo_cat_buffer[1][3] = 0x88;
+        bongo_cat_buffer[1][4] = 0x89;
+        bongo_cat_buffer[2][4] = 0xA8;
+        bongo_cat_buffer[2][4] = 0xA9;
+    }
+}
+
+static void trigger_hand_animation(bool is_left) {
+    if (is_left) {
+        left_hand_timer = timer_read();
+        left_hand_down = true;
+        animate_hand_left(false);
+    } else {
+        right_hand_timer = timer_read();
+        right_hand_down = true;
+        animate_hand_right(false);
+    }
+}
+
+static void update_hand_animation(void) {
+    if (left_hand_down && timer_elapsed(left_hand_timer) >= HAND_ANIM_DELAY_MS) {
+        animate_hand_left(true);
+        left_hand_down = false;
+    }
+    if (right_hand_down && timer_elapsed(right_hand_timer) >= HAND_ANIM_DELAY_MS) {
+        animate_hand_right(true);
+        right_hand_down = false;
+    }
+}
+
+void write_bongo_cat(uint8_t col, uint8_t line) {
+    for (uint8_t i = 0; i < BONGO_CAT_HEIGHT; i++) {
+        st7565_set_cursor(col, line + i);
+        st7565_write(bongo_cat_buffer[i], false);
+    }
+}
+
+void write_lighting_screen(void) {
+    const char* effect_name = led_matrix_get_mode_name(led_matrix_get_mode());
+    st7565_write_P(effect_name, false);
+}
+
+void write_status_screen(void) {
+    // Host Keyboard Layer Status
+    switch (get_highest_layer(layer_state)) {
+        case BASE:
+            st7565_write_P(PSTR("Default\n"), false);
+            break;
+        case FUNCTION:
+            st7565_write_P(PSTR("Function\n"), false);
+            break;
+        case SPECIAL:
+            st7565_write_P(PSTR("Special\n"), false);
+            break;
+        case NUMPAD:
+            st7565_write_P(PSTR("Numpad\n"), false);
+            break;
+        default:
+            st7565_write_ln_P(PSTR("Undefined\n"), false);
+    }
+
+    // Host Keyboard LED Status
+    led_t led_state = host_keyboard_led_state();
+    st7565_write_P(led_state.num_lock ? PSTR("NUM ") : PSTR("    "), false);
+    st7565_write_P(led_state.caps_lock ? PSTR("CAP ") : PSTR("    "), false);
+    st7565_write_P(led_state.scroll_lock ? PSTR("SCR ") : PSTR("    "), false);
+    st7565_write_P("\n", false);
+
+    st7565_write_P(g_flags.tapdance ? PSTR("TAP ") : PSTR("    "), false);
+    st7565_write_P(g_flags.mocking ? PSTR("MCK ") : PSTR("    "), false);
+    st7565_write_P(g_flags.mac ? PSTR("MAC ") : PSTR("    "), false);
+    st7565_write_P("\n", false);
+
+    static const char ic_logo[] = {0xC6, 0xC7};
+    st7565_write_P(ic_logo, false);
+    st7565_write_P(" Infinity Ergodox\n", false);
+
+    write_bongo_cat(15, 0);
+}
 
 void st7565_task_user(void) {
-    if (is_keyboard_master())
-    {
-        // Host Keyboard Layer Status
-        st7565_write_P(PSTR("Layer: "), false);
 
-        switch (get_highest_layer(layer_state)) {
-            case BASE:
-                st7565_write_P(PSTR("Default\n"), false);
-                break;
-            case FUNCTION:
-                st7565_write_P(PSTR("Function\n"), false);
-                break;
-            case SPECIAL:
-                st7565_write_P(PSTR("Special\n"), false);
-                break;
-            case NUMPAD:
-                st7565_write_P(PSTR("Numpad\n"), false);
-                break;
-            default:
-                st7565_write_ln_P(PSTR("Undefined\n"), false);
-        }
-
-        // Host Keyboard LED Status
-        led_t led_state = host_keyboard_led_state();
-        st7565_write_P(led_state.num_lock ? PSTR("NUM ") : PSTR("    "), false);
-        st7565_write_P(led_state.caps_lock ? PSTR("CAP ") : PSTR("    "), false);
-        st7565_write_P(led_state.scroll_lock ? PSTR("SCR ") : PSTR("    "), false);
-
-        st7565_write_P("\n", false);
-
-        st7565_write_P(g_flags.tapdance ? PSTR("TAP ") : PSTR("    "), false);
-        st7565_write_P(g_flags.mocking ? PSTR("MCK ") : PSTR("    "), false);
-        st7565_write_P(g_flags.mac ? PSTR("MAC ") : PSTR("    "), false);
-
-        st7565_write_P("\n", false);
-
-        const char* effect_name = led_matrix_get_mode_name(led_matrix_get_mode());
-        st7565_write_P(effect_name, false);
-    }
-    else
-    {
-        // Draw logo
-        static const char qmk_logo[] = {
-            0x80, 0x81, 0x82, 0x83, 0x84, 0x85, 0x86, 0x87, 0x88, 0x89, 0x8A, 0x8B, 0x8C, 0x8D, 0x8E, 0x8F, 0x90, 0x91, 0x92, 0x93, 0x94,
-            0xA0, 0xA1, 0xA2, 0xA3, 0xA4, 0xA5, 0xA6, 0xA7, 0xA8, 0xA9, 0xAA, 0xAB, 0xAC, 0xAD, 0xAE, 0xAF, 0xB0, 0xB1, 0xB2, 0xB3, 0xB4,
-            0xC0, 0xC1, 0xC2, 0xC3, 0xC4, 0xC5, 0xC6, 0xC7, 0xC8, 0xC9, 0xCA, 0xCB, 0xCC, 0xCD, 0xCE, 0xCF, 0xD0, 0xD1, 0xD2, 0xD3, 0xD4, 0x00
-        };
-
-        st7565_write(qmk_logo, false);
-        st7565_write("  Infinity  Ergodox  ", false);
-    }
+    set_lcd_color_for_layer(layer_state);
+    update_hand_animation();
+    write_status_screen();
 }
 
 #endif
