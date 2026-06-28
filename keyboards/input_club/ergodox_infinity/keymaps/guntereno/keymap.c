@@ -174,10 +174,6 @@ void output_version(void) {
     SEND_STRING(QMK_KEYBOARD "/" QMK_KEYMAP " @ " QMK_VERSION);
 }
 
-void toggle_caps(void) {
-    tap_code(KC_CAPS);
-}
-
 void rfun_pressed(void)
 {
     if (g_flags.mac) {
@@ -273,10 +269,21 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     }
 #endif
 
-    // Mock mode alternates the caps each time an alphabet character is pressed
+    // Mock mode alternates shifted letters every other alphabet key press
     if (g_flags.mocking && record->event.pressed) {
         if (keycode >= KC_A && keycode <= KC_Z) {
-            toggle_caps();
+            static bool mock_shift;
+
+            if (mock_shift) {
+                register_code(KC_LSFT);
+            }
+            tap_code16(keycode);
+            if (mock_shift) {
+                unregister_code(KC_LSFT);
+            }
+
+            mock_shift = !mock_shift;
+            return false;
         }
     }
 
@@ -297,7 +304,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         case CK_MOCK_TOGGLE:
             if (record->event.pressed) {
                 g_flags.mocking = !g_flags.mocking;
-                if (g_flags.mocking) toggle_caps();
             }
             return false;
 
