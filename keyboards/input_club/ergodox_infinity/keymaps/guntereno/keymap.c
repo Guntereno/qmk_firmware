@@ -458,7 +458,7 @@ static void trigger_hand_animation(bool is_left) {
     }
 }
 
-static void update_hand_animation(void) {
+static void update_bongo_cat(void) {
     if (left_hand_down && timer_elapsed(left_hand_timer) >= HAND_ANIM_DELAY_MS) {
         animate_hand_left(true);
         left_hand_down = false;
@@ -477,6 +477,16 @@ void write_bongo_cat(uint8_t col, uint8_t line) {
 }
 
 void write_lighting_screen(void) {
+    st7565_clear();
+
+    char buffer[22];
+
+    sprintf((char *)buffer, "Brightness: %3d\n", led_matrix_get_val());
+    st7565_write_P(buffer, false);
+
+    sprintf((char *)buffer, "Speed: %3d\n", led_matrix_get_speed());
+    st7565_write_P(buffer, false);
+
     const char* effect_name = led_matrix_get_mode_name(led_matrix_get_mode());
     st7565_write_P(effect_name, false);
 }
@@ -516,14 +526,25 @@ void write_status_screen(void) {
     st7565_write_P(ic_logo, false);
     st7565_write_P(" Infinity Ergodox\n", false);
 
-    write_bongo_cat(15, 0);
+    if (is_keyboard_master())
+    {
+        write_bongo_cat(15, 0);
+    }
 }
 
 void st7565_task_user(void) {
-
     set_lcd_color_for_layer(layer_state);
-    update_hand_animation();
-    write_status_screen();
+    update_bongo_cat();
+
+    if (is_keyboard_master()) {
+        write_status_screen();
+    } else {
+        if (get_highest_layer(layer_state) == SPECIAL) {
+            write_lighting_screen();
+        } else {
+            write_status_screen();
+        }
+    }
 }
 
 #endif
