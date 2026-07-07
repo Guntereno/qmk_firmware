@@ -25,7 +25,6 @@ enum custom_keycodes {
 };
 
 enum tapdance_definitions {
-    TD_ESC_CAPS,
     TD_PAUSE_PRNTSCRN,
     TD_SAFETY_RESET,
     TD_SAFETY_EEPROM
@@ -35,8 +34,6 @@ enum tapdance_definitions {
 
 static void dance_safety_reset(tap_dance_state_t  *state, void *user_data);
 static void dance_safety_eeprom(tap_dance_state_t  *state, void *user_data);
-static void dance_esc_caps_altf4(tap_dance_state_t  *state, void *user_data);
-
 
 /* ---------- Types ---------- */
 
@@ -52,7 +49,6 @@ typedef struct {
 static ModeFlags g_flags = {0};
 
 tap_dance_action_t tap_dance_actions[] = {
-    [TD_ESC_CAPS]       = ACTION_TAP_DANCE_FN(dance_esc_caps_altf4),
     [TD_PAUSE_PRNTSCRN] = ACTION_TAP_DANCE_DOUBLE(KC_PSCR, KC_PAUSE),
     [TD_SAFETY_RESET]   = ACTION_TAP_DANCE_FN(dance_safety_reset),
     [TD_SAFETY_EEPROM]  = ACTION_TAP_DANCE_FN(dance_safety_eeprom),
@@ -67,7 +63,7 @@ tap_dance_action_t tap_dance_actions[] = {
  */
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [BASE] = LAYOUT_ergodox(
-        KC_EQL,   KC_1,    KC_2,    KC_3,    KC_4,     KC_5, TD(TD_ESC_CAPS),
+        KC_EQL,   KC_1,    KC_2,    KC_3,    KC_4,     KC_5, KC_ESC,
         KC_NUHS,  KC_Q,    KC_W,    KC_E,    KC_R,     KC_T, KC_NUBS,
         KC_TAB,   KC_A,    KC_S,    KC_D,    KC_F,     KC_G,
         CK_LSFT,  KC_Z,    KC_X,    KC_C,    KC_V,     KC_B, MO(SPECIAL),
@@ -95,7 +91,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [FUNCTION] = LAYOUT_ergodox(
         KC_F13,  KC_F1,   KC_F2,   KC_F3,   KC_F4,    KC_F5,    KC_F11,
         KC_NO,   KC_NO,   KC_HOME, KC_UP,   KC_END,   KC_PGUP,  KC_NO,
-                 KC_NO,   KC_NO,   KC_LEFT, KC_DOWN,  KC_RIGHT, KC_PGDN,
+        KC_NO,   KC_NO,   KC_LEFT, KC_DOWN, KC_RIGHT, KC_PGDN,
         KC_TRNS, KC_NO,   KC_NO,   KC_NO,   KC_NO,    KC_NO,    KC_NO,
         KC_TRNS, KC_TRNS, KC_TRNS, KC_NO,   KC_NO,
 
@@ -120,11 +116,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  * the top corners.
  */
     [SPECIAL] = LAYOUT_ergodox(
-        TD(TD_SAFETY_RESET),  KC_NO, KC_NO, KC_NO,               KC_NO,               KC_NO,               KC_NO,
-        TD(TD_SAFETY_EEPROM), KC_NO, KC_NO, KC_AUDIO_VOL_UP,     KC_MEDIA_PLAY_PAUSE, CK_TD_TOGGLE,        KC_NO,
-                              KC_NO, KC_NO, KC_MEDIA_PREV_TRACK, KC_AUDIO_VOL_DOWN,   KC_MEDIA_NEXT_TRACK, CK_GLOBE_TOGGLE,
-        KC_NO,                KC_NO, KC_NO, KC_MUTE,             CK_VRSN,             KC_NO,               KC_NO,
-        KC_NO,                KC_NO, KC_NO, KC_NO,               KC_NO,
+        TD(TD_SAFETY_RESET),  KC_NO, KC_NO,               KC_NO,               KC_NO,               KC_NO,               KC_NO,
+        TD(TD_SAFETY_EEPROM), KC_NO, KC_MUTE,             KC_AUDIO_VOL_UP,     KC_MEDIA_PLAY_PAUSE, CK_TD_TOGGLE,        KC_NO,
+        KC_NO,                KC_NO, KC_MEDIA_PREV_TRACK, KC_AUDIO_VOL_DOWN,   KC_MEDIA_NEXT_TRACK, CK_GLOBE_TOGGLE,
+        KC_NO,                KC_NO, KC_NO,               KC_CAPS,      CK_VRSN,             KC_NO,               KC_NO,
+        KC_NO,                KC_NO, KC_NO,               KC_NO,        KC_NO,
 
                  KC_INS, KC_SCROLL_LOCK,
                         KC_NO,
@@ -146,11 +142,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  * at the home position of the left. There's also a handy calculator shortcut.
  */
     [NUMPAD] = LAYOUT_ergodox(
-        KC_NO,   KC_NO,   KC_NO,       KC_NO,          KC_NO,      KC_NO,       KC_TRNS,
-        KC_NO,   KC_NO,   KC_NUHS,     LSFT(KC_4),     LSFT(KC_3), KC_NO,       KC_NO,
-                 KC_TRNS, KC_KP_SLASH, KC_KP_ASTERISK, KC_KP_PLUS, KC_KP_MINUS, KC_NO,
-        KC_TRNS, KC_NO,   KC_NO,       KC_NO,          KC_NO,      KC_NO,      KC_NO,
-        KC_TRNS, KC_TRNS, KC_TRNS,     KC_NO,          KC_NO,
+        KC_NO,   KC_NO,       KC_NO,          KC_NO,          KC_NO,       KC_NO, KC_TRNS,
+        KC_NO,   KC_NO,       KC_NUHS,        LSFT(KC_4),     LSFT(KC_3),  KC_NO, KC_NO,
+        KC_TRNS, KC_KP_SLASH, KC_KP_ASTERISK, KC_KP_PLUS,     KC_KP_MINUS, KC_NO,
+        KC_TRNS, KC_NO,       KC_NO,          KC_NO,          KC_NO,       KC_NO, KC_NO,
+        KC_TRNS, KC_TRNS,     KC_TRNS,        KC_NO,          KC_NO,
 
                  KC_NO, KC_TRNS,
                         KC_TRNS,
@@ -340,18 +336,6 @@ static void dance_safety_reset(tap_dance_state_t *state, void *user_data) {
 
 static void dance_safety_eeprom(tap_dance_state_t *state, void *user_data) {
     if (process_safety_tapdance(state)) eeconfig_init();
-}
-
-static void dance_esc_caps_altf4(tap_dance_state_t *state, void *user_data) {
-    switch (state->count) {
-        case 1: tap_code(KC_ESC); break;
-        case 2: tap_code(KC_CAPS); break;
-        case 3:
-            register_code(KC_LALT);
-            tap_code(KC_F4);
-            unregister_code(KC_LALT);
-            break;
-    }
 }
 
 
