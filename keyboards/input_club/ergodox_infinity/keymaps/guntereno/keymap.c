@@ -77,11 +77,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
                          KC_END,
         KC_BSPC, KC_DEL, CK_LFUN,
 
-        TG(NUMPAD), KC_6, KC_7, KC_8, KC_9, KC_0, KC_MINS,
-        KC_LBRC, KC_Y, KC_U, KC_I, KC_O, KC_P, KC_RBRC,
-        KC_H, KC_J, KC_K, KC_L, KC_SCLN, KC_QUOT,
-        MO(SPECIAL), KC_N, KC_M, KC_COMM, KC_DOT, KC_SLSH, CK_RSFT,
-                            KC_UP, KC_DOWN, KC_RALT, KC_APPLICATION, CK_RCTR,
+        TG(NUMPAD),  KC_6, KC_7,  KC_8,    KC_9,    KC_0,           KC_MINS,
+        KC_LBRC,     KC_Y, KC_U,  KC_I,    KC_O,    KC_P,           KC_RBRC,
+                     KC_H, KC_J,  KC_K,    KC_L,    KC_SCLN,        KC_QUOT,
+        MO(SPECIAL), KC_N, KC_M,  KC_COMM, KC_DOT,  KC_SLSH,        CK_RSFT,
+                           KC_UP, KC_DOWN, KC_RALT, KC_APPLICATION, CK_RCTR,
 
         KC_PGUP, TD(TD_PAUSE_PRNTSCRN),
         KC_PGDN,
@@ -93,21 +93,21 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  * home position on the left side, with mouse controls on the right.
  */
     [FUNCTION] = LAYOUT_ergodox(
-        KC_F13, KC_F1, KC_F2, KC_F3, KC_F4, KC_F5, KC_F11,
-        KC_NO, KC_NO, KC_HOME, KC_UP, KC_END, KC_PGUP, KC_NO,
-        KC_NO, KC_NO, KC_LEFT, KC_DOWN, KC_RIGHT, KC_PGDN,
-        KC_TRNS, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,
-        KC_TRNS, KC_TRNS, KC_TRNS, KC_NO, KC_NO,
+        KC_F13,  KC_F1,   KC_F2,   KC_F3,   KC_F4,    KC_F5,    KC_F11,
+        KC_NO,   KC_NO,   KC_HOME, KC_UP,   KC_END,   KC_PGUP,  KC_NO,
+                 KC_NO,   KC_NO,   KC_LEFT, KC_DOWN,  KC_RIGHT, KC_PGDN,
+        KC_TRNS, KC_NO,   KC_NO,   KC_NO,   KC_NO,    KC_NO,    KC_NO,
+        KC_TRNS, KC_TRNS, KC_TRNS, KC_NO,   KC_NO,
 
                  KC_NO, KC_NO,
                         KC_NO,
         KC_NO, KC_NO, KC_TRNS,
 
-        KC_F12, KC_F6, KC_F7, KC_F8, KC_F9, KC_F10, KC_F14,
-        KC_NO, KC_NO, QK_MOUSE_WHEEL_DOWN, QK_MOUSE_CURSOR_UP, QK_MOUSE_WHEEL_UP, KC_NO, KC_NO,
-                 KC_NO, QK_MOUSE_CURSOR_LEFT, QK_MOUSE_CURSOR_DOWN, QK_MOUSE_CURSOR_RIGHT, KC_NO, KC_NO,
-        KC_TRNS, KC_NO, QK_MOUSE_ACCELERATION_0, QK_MOUSE_ACCELERATION_1, QK_MOUSE_ACCELERATION_2, KC_NO, KC_TRNS,
-                 KC_NO, KC_NO, KC_TRNS, KC_TRNS, KC_TRNS,
+        KC_F12,  KC_F6, KC_F7,                   KC_F8,                   KC_F9,                   KC_F10,  KC_F14,
+        KC_NO,   KC_NO, QK_MOUSE_WHEEL_DOWN,     QK_MOUSE_CURSOR_UP,      QK_MOUSE_WHEEL_UP,       KC_NO,   KC_NO,
+                 KC_NO, QK_MOUSE_CURSOR_LEFT,    QK_MOUSE_CURSOR_DOWN,    QK_MOUSE_CURSOR_RIGHT,   KC_NO,   KC_NO,
+        KC_TRNS, KC_NO, QK_MOUSE_ACCELERATION_0, QK_MOUSE_ACCELERATION_1, QK_MOUSE_ACCELERATION_2, KC_NO,   KC_TRNS,
+                        KC_NO,                   KC_NO,                   KC_TRNS,                 KC_TRNS, KC_TRNS,
 
         KC_NO, KC_NO,
         KC_NO,
@@ -120,11 +120,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  * the top corners.
  */
     [SPECIAL] = LAYOUT_ergodox(
-        TD(TD_SAFETY_RESET), KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,
-        TD(TD_SAFETY_EEPROM), KC_NO, KC_NO, KC_AUDIO_VOL_UP, KC_MEDIA_PLAY_PAUSE, CK_TD_TOGGLE, KC_NO,
-        KC_NO, KC_NO, KC_MEDIA_PREV_TRACK, KC_AUDIO_VOL_DOWN, KC_MEDIA_NEXT_TRACK, CK_GLOBE_TOGGLE,
-        KC_NO, KC_NO, KC_NO, KC_MUTE, CK_VRSN, KC_NO, KC_NO,
-        KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,
+        TD(TD_SAFETY_RESET),  KC_NO, KC_NO, KC_NO,               KC_NO,               KC_NO,               KC_NO,
+        TD(TD_SAFETY_EEPROM), KC_NO, KC_NO, KC_AUDIO_VOL_UP,     KC_MEDIA_PLAY_PAUSE, CK_TD_TOGGLE,        KC_NO,
+                              KC_NO, KC_NO, KC_MEDIA_PREV_TRACK, KC_AUDIO_VOL_DOWN,   KC_MEDIA_NEXT_TRACK, CK_GLOBE_TOGGLE,
+        KC_NO,                KC_NO, KC_NO, KC_MUTE,             CK_VRSN,             KC_NO,               KC_NO,
+        KC_NO,                KC_NO, KC_NO, KC_NO,               KC_NO,
 
                  KC_INS, KC_SCROLL_LOCK,
                         KC_NO,
@@ -134,7 +134,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         KC_NO, KC_NO,   LM_PREV,        LM_BRIU, LM_NEXT, LM_FLGN, TD(TD_SAFETY_EEPROM),
                LM_TOGG, LM_SPDD,        LM_BRID, LM_SPDU, LM_FLGP, KC_NO,
         KC_NO, KC_NO,   CK_MOCK_TOGGLE, KC_NO,   KC_NO,   KC_NO,   KC_TRNS,
-               KC_NO,   KC_NO,          KC_TRNS, KC_TRNS, KC_TRNS,
+                        KC_NO,          KC_NO,   KC_TRNS, KC_TRNS, KC_TRNS,
 
         KC_NO, KC_NO,
         KC_NO,
@@ -146,21 +146,21 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  * at the home position of the left. There's also a handy calculator shortcut.
  */
     [NUMPAD] = LAYOUT_ergodox(
-        KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_TRNS,
-        KC_NO, KC_NO, KC_NUHS, LSFT(KC_4), LSFT(KC_3), KC_NO, KC_NO,
-        KC_TRNS, KC_KP_SLASH, KC_KP_ASTERISK, KC_KP_PLUS, KC_KP_MINUS, KC_NO,
-        KC_TRNS, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO, KC_NO,
-        KC_TRNS, KC_TRNS, KC_TRNS, KC_NO, KC_NO,
+        KC_NO,   KC_NO,   KC_NO,       KC_NO,          KC_NO,      KC_NO,       KC_TRNS,
+        KC_NO,   KC_NO,   KC_NUHS,     LSFT(KC_4),     LSFT(KC_3), KC_NO,       KC_NO,
+                 KC_TRNS, KC_KP_SLASH, KC_KP_ASTERISK, KC_KP_PLUS, KC_KP_MINUS, KC_NO,
+        KC_TRNS, KC_NO,   KC_NO,       KC_NO,          KC_NO,      KC_NO,      KC_NO,
+        KC_TRNS, KC_TRNS, KC_TRNS,     KC_NO,          KC_NO,
 
                  KC_NO, KC_TRNS,
                         KC_TRNS,
         KC_TRNS, KC_TRNS, KC_NO,
 
-        TG(NUMPAD), KC_NO, KC_NO, KC_NUM_LOCK, KC_KP_SLASH, KC_KP_ASTERISK, KC_KP_MINUS,
-        KC_NO, KC_NO, KC_NO, KC_P7, KC_P8, KC_P9, KC_KP_PLUS,
-                 KC_NO, KC_NO, KC_P4, KC_P5, KC_P6, KC_KP_ENTER,
-        KC_NO, KC_NO, KC_CALCULATOR, KC_P1, KC_P2, KC_P3, KC_TRNS,
-                        KC_KP_ENTER, KC_KP_0, KC_KP_0, KC_KP_DOT, KC_TRNS,
+        TG(NUMPAD), KC_NO,       KC_NO,         KC_NUM_LOCK, KC_KP_SLASH, KC_KP_ASTERISK, KC_KP_MINUS,
+        KC_NO,      KC_NO,       KC_NO,         KC_P7,       KC_P8,       KC_P9,          KC_KP_PLUS,
+                    KC_NO,       KC_NO,         KC_P4,       KC_P5,       KC_P6,          KC_KP_ENTER,
+        KC_NO,      KC_NO,       KC_CALCULATOR, KC_P1,       KC_P2,       KC_P3,          KC_TRNS,
+                                 KC_KP_ENTER,   KC_KP_0,     KC_KP_0,     KC_KP_DOT,      KC_TRNS,
 
         KC_TRNS, KC_NO,
         KC_TRNS,
