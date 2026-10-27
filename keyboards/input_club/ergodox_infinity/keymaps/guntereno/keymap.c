@@ -119,12 +119,12 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         TD(TD_SAFETY_RESET),  KC_NO, KC_NO,               KC_NO,               KC_NO,               KC_NO,               KC_NO,
         TD(TD_SAFETY_EEPROM), KC_NO, KC_MUTE,             KC_AUDIO_VOL_UP,     KC_MEDIA_PLAY_PAUSE, CK_TD_TOGGLE,        KC_NO,
         KC_NO,                KC_NO, KC_MEDIA_PREV_TRACK, KC_AUDIO_VOL_DOWN,   KC_MEDIA_NEXT_TRACK, CK_GLOBE_TOGGLE,
-        KC_NO,                KC_NO, KC_NO,               KC_CAPS,      CK_VRSN,             KC_NO,               KC_NO,
-        KC_NO,                KC_NO, KC_NO,               KC_NO,        KC_NO,
+        KC_NO,                KC_NO, KC_NO,               KC_CAPS,             CK_VRSN,             KC_NO,               KC_NO,
+        KC_NO,                KC_NO, KC_NO,               KC_NO,               QK_BOOT,
 
-                 KC_INS, KC_SCROLL_LOCK,
-                        KC_NO,
-        KC_NO, KC_NO, KC_NO,
+               KC_INS, KC_SCROLL_LOCK,
+                       KC_NO,
+        KC_NO, KC_NO,  KC_NO,
 
         KC_NO, KC_NO,   KC_NO,          KC_NO,   KC_NO,   KC_NO,   TD(TD_SAFETY_RESET),
         KC_NO, KC_NO,   LM_PREV,        LM_BRIU, LM_NEXT, LM_FLGN, TD(TD_SAFETY_EEPROM),
@@ -163,6 +163,12 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         KC_TRNS, KC_TRNS, KC_TRNS
     )
 };
+
+
+void keyboard_pre_init_user(void) {
+    // Force the keyboard to wait for power to stabilize before running QMK init loops
+    wait_ms(5000);
+}
 
 /* ---------- Custom behaviour ---------- */
 
